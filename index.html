@@ -1,0 +1,94 @@
+<!--
+    Copyright 2020 Hendrik Weimer
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ideal gas simulator</title>
+  </head>
+  <body>
+    <style>
+       body { font-size: 200%; }
+      .mtable table td tr { display: block; border-collapse: collapse; }
+      .mtable td { vertical-align: top; }
+      input { width: 80px; font-size: 100%; }
+      .error { color: red; font-size: 75%; }
+      .potential { width: 250px; }
+       .controls td { padding-left: 10px; padding-right: 20px;}
+       table.controls { border: 1px solid black; }
+       p.status { font-size: 75%; }
+    </style>
+    <table class="mtable" style="width: 100%; max-width: 1024px;">
+      <tbody>
+	<tr>
+	  <td id="parent" style="width: 60%;">
+	    <p id="status" class="status">Loading Pyodide...</p>  
+	    <canvas id="canvas" style="width: 100%;"></canvas>
+	    <table class="controls">
+	      <tr>
+		<td>1/Temperature</td>
+		<td>Mass</td>
+		<td>Potential</td>
+	      </tr>
+	      <tr>
+		<td><input id="beta" value="1.0" ></td>
+		<td><input id="m" value="1.0" ></td>
+		<td><input id="V" class="potential" value="1/2*x**2" ></td>
+	      </tr>
+	      <tr>
+		<td><p class="error" id="lbeta"></p></td>
+		<td><p class="error" id="lm"></p></td>
+		<td><p class="error" id="lV"></p></td>
+              </tr>
+	    </table>
+	  </td>
+	  <td style="width: 30%;">
+	    <table>
+	      <tr>
+		<td>
+		  <img id="phase" style="width: 100%;">
+		</td>
+	      </tr>
+	      <tr>
+		<td>
+		  <img id="xpdf" style="width: 100%;">
+		</td>
+	      </tr>
+	      <tr>
+		<td>
+		  <img id="vpdf" style="width: 100%;">
+		</td>
+	      </tr>
+	    </table>
+	  </td>
+	</tr>
+      </tbody>
+    </table>
+    <script type="text/javascript" src="pyodide.js"></script>
+      <script type="text/javascript">
+      async function main() {
+        let pyodide = await loadPyodide({
+          indexURL: "./pyodide/",
+      });
+      await pyodide.loadPackage(["numpy", "matplotlib", "sympy"]);
+      pyodide.runPython(await (await fetch("idealgas.py")).text());
+      }
+      main();
+    </script>
+  </body>
+</html>
+    
