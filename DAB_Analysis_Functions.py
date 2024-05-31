@@ -255,19 +255,23 @@ class DAB():
         init_guess = np.mean(np.mean(area, axis=1), axis=0)
         return init_guess
     
-    def plot_masks(self, img, masks):
+    def plot_masks(self, img, masks=None):
         import matplotlib.pyplot as plt
-        
-        fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
-        axes[0].imshow(img)
-        
-        axes[1].imshow(img)
-        if len(masks.shape) > 2: # if multiple masks
-            colors = ['darkred', 'darkblue']
-            for i in np.arange(masks.shape[2]): # plot multiple masks
-                axes[1].contour(masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i])
+
+        if isinstance(masks, type(None)):
+            fig, axes = plt.subplots(1, 1, figsize=(8, 4))
+            axes.imshow(img)
         else:
-            axes[1].contour(masks, [0.5], linewidths=0.5, colors='darkred')
+            fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
+            axes[0].imshow(img)
+
+            axes[1].imshow(img)
+            if len(masks.shape) > 2: # if multiple masks
+                colors = ['darkred', 'darkblue']
+                for i in np.arange(masks.shape[2]): # plot multiple masks
+                    axes[1].contour(masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i])
+            else:
+                axes[1].contour(masks, [0.5], linewidths=0.5, colors='darkred')
 
         
         for a in axes:
