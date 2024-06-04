@@ -78,14 +78,41 @@
 	</tr>
       </tbody>
     </table>
-    <script type="text/javascript" src="pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
       <script type="text/javascript">
       async function main() {
-        let pyodide = await loadPyodide({
-          indexURL: "./pyodide/",
-      });
-      await pyodide.loadPackage(["numpy", "matplotlib", "sympy"]);
-      pyodide.runPython(await (await fetch("test.py")).text());
+        let pyodide = await loadPyodide();
+      
+        // Make sure the packages we need are available to python
+        await pyodide.loadPackage(["numpy", "matplotlib", "sympy", "scikit-image", "opencv-python"]);
+        // const micropip = pyodide.pyimport("micropip");
+        // await micropip.install('pylibtiff');
+        // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)
+        // to the "virtual filesystem" (/home/pyodide/...) where pyodide has access to it.
+        await pyodide.runPythonAsync(`
+            from pyodide.http import pyfetch
+            response = await pyfetch("DAB_Analysis_Functions.py")
+            with open("DAB_Analysis_Functions.py", "wb") as f:
+                f.write(await response.bytes())
+        `)
+        // Note that if we wanted we could access functions from DAB_Analysis_Functions within Javascript:
+          // DAB = pyodide.pyimport("DAB_Analysis_Functions");
+          // DAB.helloWorld(); // This prints "Hello world!" to the console
+
+
+        // XXX: This will no longer be needed once we upload the file from the user's computer, but for testing we need to copy the example image to the virtual filesystem
+        await pyodide.runPythonAsync(`
+            from pyodide.http import pyfetch
+            response = await pyfetch("data/4.ome.tif")
+            with open("4.ome.tif", "wb") as f:
+                f.write(await response.bytes())
+        `)
+
+        // Load and run "test.py" which takes the input data from the form,
+        // runs the computation that outputs matplotlib plot, and writes to HTML canvas
+        // test.py has access to the DAB_Analysis_Functions module just as if it were a real local file:
+        // from DAB_Analysis_Functions import DAB
+        pyodide.runPython(await (await fetch("test.py")).text());
       }
       main();
     </script>

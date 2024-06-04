@@ -30,12 +30,32 @@ D = DAB()
 
 import sympy as sp
 
-file = 'data/4.ome/tif'
-data = D.imread(file)
 
 print("test: End loading modules")
 
 lstatus = document.getElementById("status")
+
+
+file = '4.ome.tif'
+data = D.imread(file)
+
+def plot_image(image):
+    imgdata = D.plot_masks(image)
+
+    canvas = document.getElementById("canvas")
+
+    ctx = canvas.getContext("2d")
+
+    canvas.setAttribute("style", "background: url(\"data:image/png;base64,"
+                        + str(base64.b64encode(imgdata), "ascii")
+                        +  "\"); background-size: contain;")
+
+    plt.clf()
+
+    print("idealgas: exiting plot_main")
+
+plot_image(data)
+    # push_queue(update_distributions, "Computing distributions...")
 
 # def push_queue(func, str):
 #     lstatus.innerHTML = str
