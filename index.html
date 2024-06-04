@@ -73,23 +73,11 @@
         runAnalysis();
       }
 
-      async function checkPackageAvailability() {
-        // Message callback of pyodide.loadPackage is not reliable
-        // for telling when packages are actually loaded, so this is a workaround
-        try {
-          await pyodide.runPythonAsync(`
-          import numpy, matplotlib, skimage, cv2, pandas
-          `)
-        } catch {
-          return false
-        }
-        return true
-      }
-
       async function runAnalysis() {
         let maxAttempts = 10;
         let attempts = 0;
-        while (!pyodide || !await checkPackageAvailability()) {
+        console.log(pyodidePackageMessage);
+        while (!pyodide || !pyodidePackageMessage || !pyodidePackageMessage.startsWith("Loaded")) {
           if (attempts >= maxAttempts || pyodidePackageError) {
             console.error('Pyodide failed to initialise or load packages');
             return;
