@@ -279,7 +279,7 @@ class DAB():
                               "nuclei_aMean", 
                               "nuclei_bMean", 
                               "nuclei_threshold"]
-        asyn_params = pd.DataFrame([nuclei_params], columns=nuclei_cols)
+        nuclei_params = pd.DataFrame([nuclei_params], columns=nuclei_cols)
 
         return image_mask_asyn, image_mask_nuclei, table_asyn, table_nuclei, asyn_params, nuclei_params
     
