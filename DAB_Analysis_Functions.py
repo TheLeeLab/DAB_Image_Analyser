@@ -10,6 +10,7 @@ Class related to analysis of DAB stained images
 import numpy as np
 import skimage as ski
 import cv2
+import io
 
 class DAB():
     def __init__(self):
@@ -24,7 +25,6 @@ class DAB():
         ================OUTPUT============= 
         img is array """
         img = cv2.imread(file)
-        # img = np.asarray(Image.open(file))[:, :, ::-1]
         return img
 
     def im2double(self, img):
@@ -279,10 +279,12 @@ class DAB():
             for a in axes:
                 a.axis('off')
         
-        plt.tight_layout()
+        img_out = io.BytesIO()
+        fig.savefig(img_out, format="png")
+        img_out.seek(0)
+        imgdata = img_out.read()
         
-        plt.show()
-        return
-
+        return imgdata
+    
 def helloWorld():
     print("Hello world!")
