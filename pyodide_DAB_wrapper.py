@@ -24,10 +24,11 @@ import numpy as np
 import shutil
 
 from DAB_Analysis_Functions import DAB
+
 D = DAB()
 
 
-dataDirectory = '/home/pyodide/data'
+dataDirectory = "/home/pyodide/data"
 files = os.listdir(dataDirectory)
 # TODO: deal with multiple files
 file = os.path.join(dataDirectory, files[0])
@@ -36,6 +37,7 @@ data = D.imread(file)
 # TODO: fixme
 for f in files:
     os.remove(os.path.join(dataDirectory, f))
+
 
 def analyse_image(image):
     asyn_LMean = document.getElementById("asyn_LMean").value
@@ -51,24 +53,31 @@ def analyse_image(image):
 
     if analyse_nuclei:
         (
-            image_mask_asyn, image_mask_nuclei, table_asyn,
-            table_nuclei, asyn_params, nuclei_params
+            image_mask_asyn,
+            image_mask_nuclei,
+            table_asyn,
+            table_nuclei,
+            asyn_params,
+            nuclei_params,
         ) = D.analyse_DAB_and_cells(
             image,
             asyn_params=np.array(
-                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold],
-                dtype=np.float64),
+                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold], dtype=np.float64
+            ),
             nuclei_params=np.array(
                 [nuclei_LMean, nuclei_aMean, nuclei_bMean, nuclei_threshold],
-                dtype=np.float64),
-            check_mask=0)
+                dtype=np.float64,
+            ),
+            check_mask=0,
+        )
         masks = np.dstack([image_mask_asyn, image_mask_nuclei])
     else:
         image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(
-            image, asyn_params=np.array(
-                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold],
-                dtype=np.float64),
-                check_mask=0
+            image,
+            asyn_params=np.array(
+                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold], dtype=np.float64
+            ),
+            check_mask=0,
         )
         masks = image_mask_asyn
 
@@ -76,26 +85,30 @@ def analyse_image(image):
 
     canvas = document.getElementById("canvas")
 
-    canvas.setAttribute("style", "background: url(\"data:image/png;base64,"
-                        + str(base64.b64encode(imgdata), "ascii")
-                        +  "\"); background-size: contain; width: 100%; background-repeat: no-repeat;")
+    canvas.setAttribute(
+        "style",
+        'background: url("data:image/png;base64,'
+        + str(base64.b64encode(imgdata), "ascii")
+        + '"); background-size: contain; width: 100%; background-repeat: no-repeat;',
+    )
 
     plt.clf()
 
-    if not os.path.exists('output'):
-        os.mkdir('output')
-    table_asyn.to_csv('output/table_asyn.csv')
-    asyn_params.to_csv('output/asyn_params.csv')
+    if not os.path.exists("output"):
+        os.mkdir("output")
+    table_asyn.to_csv("output/table_asyn.csv")
+    asyn_params.to_csv("output/asyn_params.csv")
 
     if analyse_nuclei:
-        table_nuclei.to_csv('output/table_nuclei.csv')
-        nuclei_params.to_csv('output/nuclei_params.csv')
-    shutil.make_archive('output', format='zip', root_dir='output')
+        table_nuclei.to_csv("output/table_nuclei.csv")
+        nuclei_params.to_csv("output/nuclei_params.csv")
+    shutil.make_archive("output", format="zip", root_dir="output")
 
     downloadButton = document.getElementById("downloadZip")
     downloadButton.style = "visibility: visible"
 
     reanalyseButton = document.getElementById("reanalyse")
     reanalyseButton.style = "visibility: visible"
+
 
 analyse_image(data)
