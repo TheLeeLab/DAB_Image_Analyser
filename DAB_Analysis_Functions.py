@@ -283,6 +283,3 @@ class DAB():
         imgdata = img_out.read()
         
         return imgdata
-    
-def helloWorld():
-    print("Hello world!")

@@ -20,6 +20,7 @@ from js import document
 import matplotlib.pyplot as plt
 import base64
 import os
+import numpy as np
 
 from DAB_Analysis_Functions import DAB
 D = DAB()
@@ -36,10 +37,41 @@ for f in files:
     os.remove(os.path.join(dataDirectory, f))
 
 def analyse_image(image):
+    asyn_LMean = document.getElementById("asyn_LMean").value
+    asyn_aMean = document.getElementById("asyn_aMean").value
+    asyn_bMean = document.getElementById("asyn_bMean").value
+    asyn_threshold = document.getElementById("asyn_threshold").value
 
-    image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(image, check_mask=0)
+    analyse_nuclei = document.getElementById("analyseNuclei").checked
+    nuclei_LMean = document.getElementById("nuclei_LMean").value
+    nuclei_aMean = document.getElementById("nuclei_aMean").value
+    nuclei_bMean = document.getElementById("nuclei_bMean").value
+    nuclei_threshold = document.getElementById("nuclei_threshold").value
 
-    imgdata = D.plot_masks(image, image_mask_asyn)
+    if analyse_nuclei:
+        (
+            image_mask_asyn, image_mask_nuclei, table_asyn,
+            table_nuclei, asyn_params, nuclei_params
+        ) = D.analyse_DAB_and_cells(
+            image,
+            asyn_params=np.array(
+                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold],
+                dtype=np.float64),
+            nuclei_params=np.array(
+                [nuclei_LMean, nuclei_aMean, nuclei_bMean, nuclei_threshold],
+                dtype=np.float64),
+            check_mask=0)
+        masks = np.dstack([image_mask_asyn, image_mask_nuclei])
+    else:
+        image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(
+            image, asyn_params=np.array(
+                [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold],
+                dtype=np.float64),
+                check_mask=0
+        )
+        masks = image_mask_asyn
+
+    imgdata = D.plot_masks(image, masks)
 
     canvas = document.getElementById("canvas")
 
@@ -52,7 +84,8 @@ def analyse_image(image):
     table_asyn.to_csv('table_asyn.csv')
     downloadButton = document.getElementById("downloadCSV")
     downloadButton.style = "visibility: visible"
-    downloadButton.innerHTML = "Download"
-    document.body.append(downloadButton)
+
+    reanalyseButton = document.getElementById("reanalyse")
+    reanalyseButton.style = "visibility: visible"
 
 analyse_image(data)
