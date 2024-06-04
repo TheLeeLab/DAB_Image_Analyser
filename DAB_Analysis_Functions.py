@@ -331,7 +331,7 @@ class DAB:
             "nuclei_bMean",
             "nuclei_threshold",
         ]
-        nuclei_params = pd.DataFrame([nuclei_params], columns=nuclei_cols)
+        nuclei_params = pd.DataFrame([nucl_params], columns=nuclei_cols)
 
         return (
             image_mask_asyn,
