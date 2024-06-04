@@ -19,16 +19,22 @@ from js import document
 
 import matplotlib.pyplot as plt
 import base64
+import os
 
 from DAB_Analysis_Functions import DAB
 D = DAB()
 
-lstatus = document.getElementById("status")
 
+dataDirectory = '/home/pyodide/data'
+files = os.listdir(dataDirectory)
+# TODO: deal with multiple files
+file = os.path.join(dataDirectory, files[0])
 
-file = '4.ome.tif'
 data = D.imread(file)
 image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(file, check_mask=0)
+# TODO: fixme
+for f in files:
+    os.remove(os.path.join(dataDirectory, f))
 
 def plot_image(image):
     imgdata = D.plot_masks(image)

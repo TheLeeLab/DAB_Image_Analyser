@@ -22,43 +22,124 @@
   </head>
   <body>
     <canvas id="canvas" style="width: 100%;"></canvas>
+    <input type="file" id="imageUpload" accept="image/*" />
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
       <script type="text/javascript">
-      async function main() {
-        let pyodide = await loadPyodide();
+      let pyodide;
+      let pyodidePackageMessage;
+      let pyodidePackageError;
+
+      window.onload = async function() {
+        pyodide = await loadPyodide();
+        await pyodide.loadPackage(
+          ["numpy", "matplotlib", "scikit-image", "opencv-python", "pandas"],
+          {
+            messageCallback: (message) => {pyodidePackageMessage = message; console.log(message)},
+            errorCallback: (err) => {pyodidePackageError = err; console.log(err)}
+          }
+        );
+      };
       
-        // Make sure the packages we need are available to python
-        await pyodide.loadPackage(["numpy", "matplotlib", "scikit-image", "opencv-python", "pandas"]);
-        // const micropip = pyodide.pyimport("micropip");
-        // await micropip.install('pylibtiff');
-        // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)
-        // to the "virtual filesystem" (/home/pyodide/...) where pyodide has access to it.
-        await pyodide.runPythonAsync(`
-            from pyodide.http import pyfetch
-            response = await pyfetch("DAB_Analysis_Functions.py")
-            with open("DAB_Analysis_Functions.py", "wb") as f:
-                f.write(await response.bytes())
-        `)
-        // Note that if we wanted we could access functions from DAB_Analysis_Functions within Javascript:
-          // DAB = pyodide.pyimport("DAB_Analysis_Functions");
-          // DAB.helloWorld(); // This prints "Hello world!" to the console
+      
+      const body = document.querySelector("body");
+      const imageUpload = document.querySelector("#imageUpload");
 
 
-        // XXX: This will no longer be needed once we upload the file from the user's computer, but for testing we need to copy the example image to the virtual filesystem
-        await pyodide.runPythonAsync(`
-            from pyodide.http import pyfetch
-            response = await pyfetch("data/4.ome.tif")
-            with open("4.ome.tif", "wb") as f:
-                f.write(await response.bytes())
-        `)
 
-        // Load and run "test.py" which takes the input data from the form,
-        // runs the computation that outputs matplotlib plot, and writes to HTML canvas
-        // test.py has access to the DAB_Analysis_Functions module just as if it were a real local file:
-        // from DAB_Analysis_Functions import DAB
-        pyodide.runPython(await (await fetch("test.py")).text());
+      body.ondrop = function(evt) {
+        imageUpload.files = evt.dataTransfer.files;
+        evt.preventDefault();
+        console.log('running');
+        runAnalysis();
       }
-      main();
+
+      imageUpload.onchange = function(evt) {
+        evt.preventDefault();
+        console.log('running');
+        runAnalysis();
+      }
+
+      async function checkPackageAvailability() {
+        // Message callback of pyodide.loadPackage is not reliable
+        // for telling when packages are actually loaded, so this is a workaround
+        try {
+          await pyodide.runPythonAsync(`
+          import numpy, matplotlib, skimage, cv2, pandas
+          `)
+        } catch {
+          return false
+        }
+        return true
+      }
+
+      async function runAnalysis() {
+        let maxAttempts = 10;
+        let attempts = 0;
+        while (!pyodide || !await checkPackageAvailability()) {
+          if (attempts >= maxAttempts || pyodidePackageError) {
+            console.error('Pyodide failed to initialise or load packages');
+            return;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+          attempts++;
+        }
+        if (imageUpload.files.length > 0) {
+          const file = imageUpload.files[0];
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const data = new Uint8Array(e.target.result);
+            const dataDirectory = '/home/pyodide/data';
+            try {
+              pyodide.FS.mkdir(dataDirectory);
+            } catch (err) {
+              // Directory might already exist, which is fine
+            }
+            const filePath = dataDirectory + '/' + file.name;
+            pyodide.FS.writeFile(filePath, data);
+
+            await pyodide.runPythonAsync(`
+              # Example Python code using the uploaded file
+              import os
+              print("Files in directory:", os.listdir("/home/pyodide/"))
+              # Add your Python code here to work with the uploaded file
+            `);
+            // const micropip = pyodide.pyimport("micropip");
+            // await micropip.install('pylibtiff');
+            // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)
+            // to the "virtual filesystem" (/home/pyodide/...) where pyodide has access to it.
+            await pyodide.runPythonAsync(`
+                import os
+                if not os.path.exists("DAB_Analysis_Functions.py"):
+                    from pyodide.http import pyfetch
+                    response = await pyfetch("DAB_Analysis_Functions.py")
+                    with open("DAB_Analysis_Functions.py", "wb") as f:
+                        f.write(await response.bytes())
+            `)
+            // Note that if we wanted we could access functions from DAB_Analysis_Functions within Javascript:
+              // DAB = pyodide.pyimport("DAB_Analysis_Functions");
+              // DAB.helloWorld(); // This prints "Hello world!" to the console
+
+
+            // XXX: This will no longer be needed once we upload the file from the user's computer, but for testing we need to copy the example image to the virtual filesystem
+            await pyodide.runPythonAsync(`
+                from pyodide.http import pyfetch
+                response = await pyfetch("data/4.ome.tif")
+                with open("4.ome.tif", "wb") as f:
+                    f.write(await response.bytes())
+            `)
+
+            // Load and run "test.py" which takes the input data from the form,
+            // runs the computation that outputs matplotlib plot, and writes to HTML canvas
+            // test.py has access to the DAB_Analysis_Functions module just as if it were a real local file:
+            // from DAB_Analysis_Functions import DAB
+            pyodide.runPython(await (await fetch("test.py")).text());
+          }
+          reader.readAsArrayBuffer(file);
+        } else {
+          console.error('No file selected');
+        }
+      }
+      // main();
     </script>
   </body>
 </html>
