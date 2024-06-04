@@ -192,7 +192,7 @@ class DAB():
         Returns:
             image_mask_asyn (np.2darray): mask of protein
             table_asyn (pd.DataArray): pandas array of asyn data
-            asyn_params (np.1darray): parameters used to gets asyn mask """
+            asyn_params (pd.DataArray): parameters used to gets asyn mask """
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
@@ -212,6 +212,11 @@ class DAB():
         import pandas as pd
         table_asyn = pd.DataFrame(props_asyn)
         table_asyn['pseudo_circularity'] = self.pseudo_circularity(props_asyn['axis_major_length'], props_asyn['axis_minor_length'])
+        asyn_cols = ["asyn_LMean", 
+                              "asyn_aMean", 
+                              "asyn_bMean", 
+                              "asyn_threshold"]
+        asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
         return image_mask_asyn, table_asyn, asyn_params
     
     def analyse_DAB_and_cells(self, img, asyn_params=np.array([27, 6, 5, 15]), nuclei_params=np.array([70, 1, -5, 4]), use_defaults=1, check_mask=1):
@@ -230,8 +235,8 @@ class DAB():
             image_mask_nuclei (np.2darray): mask of nuclei
             table_asyn (pd.DataArray): pandas array of asyn data
             table_nuclei (pd.DataArray): pandas array of nuclei data
-            asyn_params (np.1darray): parameters used to gets asyn mask
-            nuclei_params (np.1darray): parameters used to get nuclear mask """
+            asyn_params (pd.DataArray): parameters used to gets asyn mask
+            nuclei_params (pd.DataArray): parameters used to get nuclear mask """
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
@@ -263,6 +268,19 @@ class DAB():
                                                          'axis_minor_length'))
         table_nuclei = pd.DataFrame(props_nuclei)
         table_nuclei['pseudo_circularity'] = self.pseudo_circularity(props_nuclei['axis_major_length'], props_nuclei['axis_minor_length'])
+        
+        asyn_cols = ["asyn_LMean", 
+                              "asyn_aMean", 
+                              "asyn_bMean", 
+                              "asyn_threshold"]
+        asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
+
+        nuclei_cols = ["nuclei_LMean", 
+                              "nuclei_aMean", 
+                              "nuclei_bMean", 
+                              "nuclei_threshold"]
+        asyn_params = pd.DataFrame([nuclei_params], columns=nuclei_cols)
+
         return image_mask_asyn, image_mask_nuclei, table_asyn, table_nuclei, asyn_params, nuclei_params
     
     def get_guess(self, img, lab_image, message="select area that is just DAB-stained protein aggregate; press enter when complete"):
