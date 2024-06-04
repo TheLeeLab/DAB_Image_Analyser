@@ -167,11 +167,11 @@
                         f.write(await response.bytes())
             `)
 
-            // Load and run "test.py" which takes the input data from the form,
+            // Load and run "pyodide_DAB_wrapper.py" which takes the input data from the form,
             // runs the computation that outputs matplotlib plot, and writes to HTML canvas
-            // test.py has access to the DAB_Analysis_Functions module just as if it were a real local file:
+            // pyodide_DAB_wrapper.py has access to the DAB_Analysis_Functions module just as if it were a real local file:
             // from DAB_Analysis_Functions import DAB
-            pyodide.runPython(await (await fetch("test.py")).text());
+            pyodide.runPython(await (await fetch("pyodide_DAB_wrapper.py")).text());
           }
           reader.readAsArrayBuffer(file);
         } else {
