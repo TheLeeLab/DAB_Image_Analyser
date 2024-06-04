@@ -36,7 +36,7 @@ image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(file, check_mask=0)
 for f in files:
     os.remove(os.path.join(dataDirectory, f))
 
-def plot_image(image):
+def analyse_image(image):
     imgdata = D.plot_masks(image)
 
     canvas = document.getElementById("canvas")
@@ -47,4 +47,4 @@ def plot_image(image):
 
     plt.clf()
 
-plot_image(data)
+analyse_image(data)
