@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import base64
 import os
 import numpy as np
+import shutil
 
 from DAB_Analysis_Functions import DAB
 D = DAB()
@@ -81,8 +82,17 @@ def analyse_image(image):
 
     plt.clf()
 
-    table_asyn.to_csv('table_asyn.csv')
-    downloadButton = document.getElementById("downloadCSV")
+    if not os.path.exists('output'):
+        os.mkdir('output')
+    table_asyn.to_csv('output/table_asyn.csv')
+    asyn_params.to_csv('output/asyn_params.csv')
+
+    if analyse_nuclei:
+        table_nuclei.to_csv('output/table_nuclei.csv')
+        nuclei_params.to_csv('output/nuclei_params.csv')
+    shutil.make_archive('output', format='zip', root_dir='output')
+
+    downloadButton = document.getElementById("downloadZip")
     downloadButton.style = "visibility: visible"
 
     reanalyseButton = document.getElementById("reanalyse")

@@ -57,7 +57,7 @@
     </form>
     <input type="file" id="imageUpload" accept="image/*" />
     <button id="reanalyse" style="visibility: hidden">Reanalyse with current parameters</button>
-    <button id="downloadCSV" style="visibility: hidden;">Download CSV</button>
+    <button id="downloadZip" style="visibility: hidden;">Download Zip</button>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
       <script type="text/javascript">
       let pyodide;
@@ -78,19 +78,19 @@
       
       const body = document.querySelector("body");
       const imageUpload = document.querySelector("#imageUpload");
-      const downloadCSV = document.querySelector("#downloadCSV");
+      const downloadZip = document.querySelector("#downloadZip");
       const reanalyseButton = document.querySelector("#reanalyse")
       const parameterForm = document.querySelector("#parameterForm");
       const nucleiParameters = document.querySelector("#nucleiParameters");
       const analyseNuclei = document.querySelector("#analyseNuclei")
 
-      downloadCSV.addEventListener('click', () => {
-        if (pyodide.FS.analyzePath('table_asyn.csv').exists) {
-          bytes = pyodide.FS.readFile("table_asyn.csv")
-          var blob = new Blob([bytes], {type: "text/csv"})
+      downloadZip.addEventListener('click', () => {
+        if (pyodide.FS.analyzePath('output.zip').exists) {
+          bytes = pyodide.FS.readFile("output.zip")
+          var blob = new Blob([bytes], {type: "application/x-zip"})
           var link = document.createElement('a');
           link.href = window.URL.createObjectURL(blob);
-          link.download = "table_asyn.csv";
+          link.download = "output.zip";
           link.click();
         } else (
           console.log("No file")
