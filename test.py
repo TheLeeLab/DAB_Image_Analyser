@@ -31,20 +31,28 @@ files = os.listdir(dataDirectory)
 file = os.path.join(dataDirectory, files[0])
 
 data = D.imread(file)
-image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(file, check_mask=0)
 # TODO: fixme
 for f in files:
     os.remove(os.path.join(dataDirectory, f))
 
 def analyse_image(image):
-    imgdata = D.plot_masks(image)
+
+    image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(image, check_mask=0)
+
+    imgdata = D.plot_masks(image, image_mask_asyn)
 
     canvas = document.getElementById("canvas")
 
     canvas.setAttribute("style", "background: url(\"data:image/png;base64,"
                         + str(base64.b64encode(imgdata), "ascii")
-                        +  "\"); background-size: contain;")
+                        +  "\"); background-size: contain; width: 100%; background-repeat: no-repeat;")
 
     plt.clf()
+
+    table_asyn.to_csv('table_asyn.csv')
+    downloadButton = document.getElementById("downloadCSV")
+    downloadButton.style = "visibility: visible"
+    downloadButton.innerHTML = "Download"
+    document.body.append(downloadButton)
 
 analyse_image(data)
