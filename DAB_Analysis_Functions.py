@@ -213,7 +213,7 @@ class DAB():
         table_nuclei is pandas array of nuclei data
         asyn_params is parameters used to gets asyn mask
         nuclei_params is parameters used to get nuclear mask """
-        img = ski.io.imread(file)
+        img = self.imread(file)
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
