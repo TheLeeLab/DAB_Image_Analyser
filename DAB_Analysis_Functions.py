@@ -164,20 +164,19 @@ class DAB():
         current_params = np.array([LMean, aMean, bMean, thres])
         return image_mask, current_params
     
-    def analyse_DAB(self, file, asyn_params=np.array([27, 6, 5, 15]), use_defaults=1, check_mask=1):
+    def analyse_DAB(self, img, asyn_params=np.array([27, 6, 5, 15]), use_defaults=1, check_mask=1):
         """ analyse_DAB function
         takes file, and uses initial parameters and rate to separate out
         coloured protein objects
         then returns table with object information
         ================INPUTS============= 
-        file is filename
+        img is image data
         asyn_params are initial default Lmean, aMean, bMean and threshold parameters
         use_defaults is boolean that is 1 (use the default parameters to separate colours) or 0 (get user selection)
         check_mask outputs a figure that shows the mask---if you don't like it, you can re-run
         ================OUTPUT============= 
         asyn_params is parameters used to get particular mask
         table_asyn is pandas array of asyn data """
-        img = self.imread(file)
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
@@ -199,13 +198,13 @@ class DAB():
         table_asyn['pseudo_circularity'] = self.pseudo_circularity(props_asyn['axis_major_length'], props_asyn['axis_minor_length'])
         return image_mask_asyn, table_asyn, asyn_params
     
-    def analyse_DAB_and_cells(self, file, asyn_params=np.array([27, 6, 5, 15]), nuclei_params=np.array([70, 1, -5, 4]), use_defaults=1, check_mask=1):
+    def analyse_DAB_and_cells(self, img, asyn_params=np.array([27, 6, 5, 15]), nuclei_params=np.array([70, 1, -5, 4]), use_defaults=1, check_mask=1):
         """ analyse_DAB_and_cells function
         takes file, and uses initial parameters and rate to separate out
         coloured objects
         then returns table with object information
         ================INPUTS============= 
-        file is filename
+        img is image data
         asyn_params are initial default Lmean, aMean, bMean and threshold parameters
         nuclei_params are initial default Lmean, aMean, bMean and threshold parameters
         ================OUTPUT============= 
@@ -213,7 +212,6 @@ class DAB():
         table_nuclei is pandas array of nuclei data
         asyn_params is parameters used to gets asyn mask
         nuclei_params is parameters used to get nuclear mask """
-        img = self.imread(file)
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
