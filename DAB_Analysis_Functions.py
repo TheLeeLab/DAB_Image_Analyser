@@ -276,6 +276,15 @@ class DAB():
         return init_guess
     
     def plot_masks(self, img, masks=None):
+        """ plot_masks function
+        takes image, and optional masks, and plots them together
+        
+        Args:
+            img (np.ndarray): image data
+            masks (np.ndarry): mask data
+            
+        Returns:
+            imgdata (bytes): figure in bytes """
         import matplotlib.pyplot as plt
 
         if isinstance(masks, type(None)):
