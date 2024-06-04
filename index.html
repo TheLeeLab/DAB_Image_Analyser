@@ -84,7 +84,7 @@
         let pyodide = await loadPyodide();
       
         // Make sure the packages we need are available to python
-        await pyodide.loadPackage(["numpy", "matplotlib", "sympy", "scikit-image", "opencv-python"]);
+        await pyodide.loadPackage(["numpy", "matplotlib", "sympy", "scikit-image", "opencv-python", "pandas"]);
         // const micropip = pyodide.pyimport("micropip");
         // await micropip.install('pylibtiff');
         // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)

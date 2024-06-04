@@ -38,6 +38,8 @@ lstatus = document.getElementById("status")
 
 file = '4.ome.tif'
 data = D.imread(file)
+image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(file, check_mask=0)
+print(table_asyn)
 
 def plot_image(image):
     imgdata = D.plot_masks(image)

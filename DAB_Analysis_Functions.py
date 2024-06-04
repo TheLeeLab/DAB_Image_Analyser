@@ -177,7 +177,7 @@ class DAB():
         ================OUTPUT============= 
         asyn_params is parameters used to get particular mask
         table_asyn is pandas array of asyn data """
-        img = ski.io.imread(file)
+        img = self.imread(file)
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
@@ -263,6 +263,7 @@ class DAB():
         if isinstance(masks, type(None)):
             fig, axes = plt.subplots(1, 1, figsize=(8, 4))
             axes.imshow(img)
+            axes.axis('off')
         else:
             fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
             axes[0].imshow(img)
@@ -274,10 +275,9 @@ class DAB():
                     axes[1].contour(masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i])
             else:
                 axes[1].contour(masks, [0.5], linewidths=0.5, colors='darkred')
-
         
-        for a in axes:
-            a.axis('off')
+            for a in axes:
+                a.axis('off')
         
         plt.tight_layout()
         
