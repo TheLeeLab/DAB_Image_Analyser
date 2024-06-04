@@ -96,17 +96,8 @@
             }
             const filePath = dataDirectory + '/' + file.name;
             pyodide.FS.writeFile(filePath, data);
-
-            await pyodide.runPythonAsync(`
-              # Example Python code using the uploaded file
-              import os
-              print("Files in directory:", os.listdir("/home/pyodide/"))
-              # Add your Python code here to work with the uploaded file
-            `);
-            // const micropip = pyodide.pyimport("micropip");
-            // await micropip.install('pylibtiff');
             // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)
-            // to the "virtual filesystem" (/home/pyodide/...) where pyodide has access to it.
+            // to the Emscripten MEMFS filesystem (/home/pyodide/...) where pyodide has access to it.
             await pyodide.runPythonAsync(`
                 import os
                 if not os.path.exists("DAB_Analysis_Functions.py"):
