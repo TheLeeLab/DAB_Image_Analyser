@@ -20,20 +20,24 @@ class DAB():
     def imread(self, file):
         """ imread function
         takes RGB image and corrects openCV's ordering
-        ================INPUTS============= 
-        file is file path
-        ================OUTPUT============= 
-        img is array """
+        
+        Args:
+            file (str): file path
+        
+        Returns:
+            img (np.2darray): array """
         img = cv2.imread(file)
         return img
 
     def im2double(self, img):
         """ im2double function
         takes image and normalises to double
-        ================INPUTS============= 
-        img is image object
-        ================OUTPUT============= 
-        imdouble is numpy array """
+        
+        Args:
+            img (np.2darray): image object
+            
+        Returns:
+            imdouble (np.2darray): numpy array converted to double """
         info = np.iinfo(img.dtype) # Get the data type of the input image
         imdouble = img.astype(np.float32) / info.max # Divide all values by the largest possible value in the datatype
         return imdouble
@@ -42,11 +46,13 @@ class DAB():
         """ getMeanLABvalues function
         takes image, image mask and gets mean channel components 
         assumes Lab colour space
-        ================INPUTS============= 
-        image is numpy array
-        mask is numpy logical array
-        ================OUTPUT============= 
-        imdouble is numpy array """
+        
+        Args:
+            image (np.2darray): numpy array
+            mask (np.2darray): numpy logical array
+        
+        Returns:
+            imdouble is numpy array """
         LMean = np.nanmean(np.multiply(image[:, :, 0], mask)) # mean of only the pixels within the masked area.
         aMean = np.nanmean(np.multiply(image[:, :, 1], mask)) # mean of only the pixels within the masked area.
         bMean = np.nanmean(np.multiply(image[:, :, 2], mask)) # mean of only the pixels within the masked area.
@@ -55,25 +61,29 @@ class DAB():
     def pseudo_circularity(self, MajorAxisLength, MinorAxisLength):
         """ pseudo_circularity function
         takes major and minor axis length and computes pseudo-circularity
-        ================INPUTS============= 
-        MajorAxisLength is major axis length in pixels
-        MinorAxisLength is minor axis length in pixels
-        ================OUTPUT============= 
-        p_circ is pseudo-circularity (runs from 0--1) """
+        
+        Args:
+            MajorAxisLength (np.float): major axis length in pixels
+            MinorAxisLength (np.float): minor axis length in pixels
+        
+        Returns:
+            p_circ (np.float64): pseudo-circularity (runs from 0--1) """
         p_circ = np.divide(np.multiply(2, MinorAxisLength), np.add(MinorAxisLength, MajorAxisLength))
         return p_circ
 
     
-    def clean_nuclear_mask(self, mask):
+    def clean_nuclear_mask(self, image_mask):
         """ clean_nuclear_mask function
-        takes mask, and cleans up nuclei
+        takes image_mask, and cleans up nuclei
         removes 3*3 (i.e. diffraction limited) objects
-        clears border, connects larger aggregates if small "holes" inside, etc
-        ================INPUTS============= 
-        mask is logical array of image mask
-        ================OUTPUT============= 
-        cleaned_mask is cleaned up mask """
-        mask_disk = 1*ski.morphology.binary_closing(mask, ski.morphology.disk(3))
+        clears border, connects larger nuclei if small "holes" inside, etc
+        
+        Args:
+            image_mask (np.2darray): logical array of image mask
+            
+        Returns:
+            cleaned_mask (np.2darray): cleaned up mask """
+        mask_disk = 1*ski.morphology.binary_closing(image_mask, ski.morphology.disk(3))
         seed = np.copy(mask_disk)
         seed[1:-1, 1:-1] = mask_disk.max()
         
@@ -86,21 +96,23 @@ class DAB():
                                                          'axis_minor_length'))
         Area = props['area']
         indices_toremove = np.unique(np.unique(label_img)[1:]*(Area < 60))[1:]
-        mask=np.isin(label_img,indices_toremove)
-        cleaned_mask[mask] = 0
+        image_mask=np.isin(label_img,indices_toremove)
+        cleaned_mask[image_mask] = 0
         return cleaned_mask
 
     
-    def clean_protein_mask(self, mask):
+    def clean_protein_mask(self, image_mask):
         """ clean_protein_mask function
-        takes mask, and cleans up protein aggregates
+        takes image_mask, and cleans up protein aggregates
         removes 3*3 (i.e. diffraction limited) objects
         clears border, connects larger aggregates if small "holes" inside, etc
-        ================INPUTS============= 
-        mask is logical array of image mask
-        ================OUTPUT============= 
-        cleaned_mask is cleaned up mask """
-        mask_disk = 1*ski.morphology.binary_closing(mask, ski.morphology.disk(1))
+        
+        Args:
+            image_mask (np.2darray): logical array of image mask
+            
+        Returns:
+            cleaned_mask (np.2darray): cleaned up mask """
+        mask_disk = 1*ski.morphology.binary_closing(image_mask, ski.morphology.disk(1))
         seed = np.copy(mask_disk)
         seed[1:-1, 1:-1] = mask_disk.max()
         
@@ -114,23 +126,25 @@ class DAB():
         minorA = props['axis_minor_length']
         Area = props['area']
         indices_toremove = np.unique(np.hstack([np.unique(label_img)[1:]*(minorA < 3), np.unique(label_img)[1:]*(Area < 9)]))[1:]
-        mask=np.isin(label_img,indices_toremove)
-        cleaned_mask[mask] = 0
+        image_mask=np.isin(label_img,indices_toremove)
+        cleaned_mask[image_mask] = 0
         return cleaned_mask
     
     def colourFilterLab(self, image, initial_params, rate=[0.75, 4], percentage=0.075, maxiter=30):
         """ colourFilterLab function
         takes image, and uses initial parameters and rate to separate out
         coloured objects
-        ================INPUTS============= 
-        image is numpy array
-        initial_params are initial Lmean, aMean, bMean and threshold parameters
-        rate is how fast to change the parameters per iteration
-        percentage is the percentage of pixels we worry about in the mask
-        maxiter is how many iterations of optimisation to do (default 30)
-        ================OUTPUT============= 
-        image_mask is logical array of image mask
-        current_params are image analysis final params """
+        
+        Args:
+            image (np.2darray): image input
+            initial_params (np.1darray): initial Lmean, aMean, bMean and threshold parameters
+            rate (np.float64): how fast to change the parameters per iteration
+            percentage (np.float64): percentage of pixels we worry about in the mask
+            maxiter (int): how many iterations of optimisation to do (default 30)
+        
+        Returns:
+            image_mask (np.2darray) logical array of image mask
+            current_params (np.1darray) image analysis final params """
         mask_current = np.zeros(image[:,:,0].shape);
         LMean = initial_params[0];
         aMean = initial_params[1];
@@ -167,16 +181,18 @@ class DAB():
     def analyse_DAB(self, img, asyn_params=np.array([27, 6, 5, 15]), use_defaults=1, check_mask=1):
         """ analyse_DAB function
         takes file, and uses initial parameters and rate to separate out
-        coloured protein objects
+        coloured objects
         then returns table with object information
-        ================INPUTS============= 
-        img is image data
-        asyn_params are initial default Lmean, aMean, bMean and threshold parameters
-        use_defaults is boolean that is 1 (use the default parameters to separate colours) or 0 (get user selection)
-        check_mask outputs a figure that shows the mask---if you don't like it, you can re-run
-        ================OUTPUT============= 
-        asyn_params is parameters used to get particular mask
-        table_asyn is pandas array of asyn data """
+        
+        Args:
+            img (np.ndarray): image data
+            asyn_params (np.1darry): initial default Lmean, aMean, bMean and threshold parameters
+            nuclei_params (np.1darray): initial default Lmean, aMean, bMean and threshold parameters
+            
+        Returns:
+            image_mask_asyn (np.2darray): mask of protein
+            table_asyn (pd.DataArray): pandas array of asyn data
+            asyn_params (np.1darray): parameters used to gets asyn mask """
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
@@ -203,15 +219,19 @@ class DAB():
         takes file, and uses initial parameters and rate to separate out
         coloured objects
         then returns table with object information
-        ================INPUTS============= 
-        img is image data
-        asyn_params are initial default Lmean, aMean, bMean and threshold parameters
-        nuclei_params are initial default Lmean, aMean, bMean and threshold parameters
-        ================OUTPUT============= 
-        table_asyn is pandas array of asyn data
-        table_nuclei is pandas array of nuclei data
-        asyn_params is parameters used to gets asyn mask
-        nuclei_params is parameters used to get nuclear mask """
+        
+        Args:
+            img (np.ndarray): image data
+            asyn_params (np.1darry): initial default Lmean, aMean, bMean and threshold parameters
+            nuclei_params (np.1darray): initial default Lmean, aMean, bMean and threshold parameters
+            
+        Returns:
+            image_mask_asyn (np.2darray): mask of protein
+            image_mask_nuclei (np.2darray): mask of nuclei
+            table_asyn (pd.DataArray): pandas array of asyn data
+            table_nuclei (pd.DataArray): pandas array of nuclei data
+            asyn_params (np.1darray): parameters used to gets asyn mask
+            nuclei_params (np.1darray): parameters used to get nuclear mask """
         lab_Image = ski.color.rgb2lab(self.im2double(img))
         if use_defaults == 0:
             init_guess = self.get_guess(self, img, lab_Image)
