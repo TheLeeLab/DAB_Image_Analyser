@@ -21,70 +21,14 @@
     <title>DAB Stain Analyser</title>
   </head>
   <body>
-    <style>
-       body { font-size: 200%; }
-      .mtable table td tr { display: block; border-collapse: collapse; }
-      .mtable td { vertical-align: top; }
-      input { width: 80px; font-size: 100%; }
-      .error { color: red; font-size: 75%; }
-      .potential { width: 250px; }
-       .controls td { padding-left: 10px; padding-right: 20px;}
-       table.controls { border: 1px solid black; }
-       p.status { font-size: 75%; }
-    </style>
-    <table class="mtable" style="width: 100%; max-width: 1024px;">
-      <tbody>
-	<tr>
-	  <td id="parent" style="width: 60%;">
-	    <p id="status" class="status">Loading Pyodide...</p>  
-	    <canvas id="canvas" style="width: 100%;"></canvas>
-	    <table class="controls">
-	      <tr>
-		<td>1/Temperature</td>
-		<td>Mass</td>
-		<td>Potential</td>
-	      </tr>
-	      <tr>
-		<td><input id="beta" value="1.0" ></td>
-		<td><input id="m" value="1.0" ></td>
-		<td><input id="V" class="potential" value="1/2*x**2" ></td>
-	      </tr>
-	      <tr>
-		<td><p class="error" id="lbeta"></p></td>
-		<td><p class="error" id="lm"></p></td>
-		<td><p class="error" id="lV"></p></td>
-              </tr>
-	    </table>
-	  </td>
-	  <td style="width: 30%;">
-	    <table>
-	      <tr>
-		<td>
-		  <img id="phase" style="width: 100%;">
-		</td>
-	      </tr>
-	      <tr>
-		<td>
-		  <img id="xpdf" style="width: 100%;">
-		</td>
-	      </tr>
-	      <tr>
-		<td>
-		  <img id="vpdf" style="width: 100%;">
-		</td>
-	      </tr>
-	    </table>
-	  </td>
-	</tr>
-      </tbody>
-    </table>
+    <canvas id="canvas" style="width: 100%;"></canvas>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
       <script type="text/javascript">
       async function main() {
         let pyodide = await loadPyodide();
       
         // Make sure the packages we need are available to python
-        await pyodide.loadPackage(["numpy", "matplotlib", "sympy", "scikit-image", "opencv-python", "pandas"]);
+        await pyodide.loadPackage(["numpy", "matplotlib", "scikit-image", "opencv-python", "pandas"]);
         // const micropip = pyodide.pyimport("micropip");
         // await micropip.install('pylibtiff');
         // Copy DAB_Analysis_Functions.py from where it lives on our server (http://example.com/DAB_Analysis_Functions.py)
