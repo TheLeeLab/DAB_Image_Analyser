@@ -259,11 +259,11 @@ class DAB():
         import matplotlib.pyplot as plt
 
         if isinstance(masks, type(None)):
-            fig, axes = plt.subplots(1, 1, figsize=(8, 4))
+            fig, axes = plt.subplots(1, 1)
             axes.imshow(img)
             axes.axis('off')
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
+            fig, axes = plt.subplots(1, 2, sharey=True)
             axes[0].imshow(img)
 
             axes[1].imshow(img)
