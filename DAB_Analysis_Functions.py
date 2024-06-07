@@ -27,7 +27,7 @@ class DAB:
 
         Returns:
             img (np.2darray): array"""
-        img = cv2.imread(file)
+        img = cv2.imread(file, cv2.COLOR_BGR2RGB)
         return img
 
     def im2double(self, img):
