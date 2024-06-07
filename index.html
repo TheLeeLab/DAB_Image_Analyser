@@ -21,43 +21,46 @@
     <title>DAB Stain Analyser</title>
   </head>
   <body>
-    <canvas id="canvas" style="width: 100%;"></canvas>
-    <form id="parameterForm">
+    <div id="loadingMessage" style="display: block;">Loading...</div>
+    <div id="appContainer" style="display: none">
+      <canvas id="canvas" style="width: 100%;"></canvas>
+      <form id="parameterForm">
 
-      <div id="asynParameters">
-        <label for="asyn_LMean">asyn_LMean:</label>
-        <input type="number" id="asyn_LMean" name="asyn_LMean" value="27" step="0.01"><br><br> <!--  TODO: proper CSS styling rather than line breaks -->
-        
-        <label for="asyn_aMean">asyn_aMean:</label>
-        <input type="number" id="asyn_aMean" name="asyn_aMean" value="6" step="0.01"><br><br>
-        
-        <label for="asyn_bMean">asyn_bMean:</label>
-        <input type="number" id="asyn_bMean" name="asyn_bMean" value="5" step="0.01"><br><br>
-        
-        <label for="asyn_threshold">asyn_threshold:</label>
-        <input type="number" id="asyn_threshold" name="asyn_threshold" value="15" step="0.01"><br><br>
-      </div>
+        <div id="asynParameters">
+          <label for="asyn_LMean">asyn_LMean:</label>
+          <input type="number" id="asyn_LMean" name="asyn_LMean" value="27" step="0.01"><br><br> <!--  TODO: proper CSS styling rather than line breaks -->
+          
+          <label for="asyn_aMean">asyn_aMean:</label>
+          <input type="number" id="asyn_aMean" name="asyn_aMean" value="6" step="0.01"><br><br>
+          
+          <label for="asyn_bMean">asyn_bMean:</label>
+          <input type="number" id="asyn_bMean" name="asyn_bMean" value="5" step="0.01"><br><br>
+          
+          <label for="asyn_threshold">asyn_threshold:</label>
+          <input type="number" id="asyn_threshold" name="asyn_threshold" value="15" step="0.01"><br><br>
+        </div>
 
-      <label for="analyseNuclei">Analyse Nuclei?:</label>
-      <input type="checkbox" id="analyseNuclei"/>
+        <label for="analyseNuclei">Analyse Nuclei?:</label>
+        <input type="checkbox" id="analyseNuclei"/>
 
-      <div id="nucleiParameters" style="visibility: hidden">
-        <label for="nuclei_LMean">nuclei_LMean:</label>
-        <input type="number" id="nuclei_LMean" name="nuclei_LMean" value="70" step="0.01"><br><br>
-        
-        <label for="nuclei_aMean">nuclei_aMean:</label>
-        <input type="number" id="nuclei_aMean" name="nuclei_aMean" value="1" step="0.01"><br><br>
-        
-        <label for="nuclei_bMean">nuclei_bMean:</label>
-        <input type="number" id="nuclei_bMean" name="nuclei_bMean" value="-5" step="0.01"><br><br>
-        
-        <label for="nuclei_threshold">nuclei_threshold:</label>
-        <input type="number" id="nuclei_threshold" name="nuclei_threshold" value="4" step="0.01"><br><br>
-      </div>
-    </form>
-    <input type="file" id="imageUpload" accept="image/*" />
-    <button id="reanalyse" style="visibility: hidden">Reanalyse with current parameters</button>
-    <button id="downloadZip" style="visibility: hidden;">Download Zip</button>
+        <div id="nucleiParameters" style="visibility: hidden">
+          <label for="nuclei_LMean">nuclei_LMean:</label>
+          <input type="number" id="nuclei_LMean" name="nuclei_LMean" value="70" step="0.01"><br><br>
+          
+          <label for="nuclei_aMean">nuclei_aMean:</label>
+          <input type="number" id="nuclei_aMean" name="nuclei_aMean" value="1" step="0.01"><br><br>
+          
+          <label for="nuclei_bMean">nuclei_bMean:</label>
+          <input type="number" id="nuclei_bMean" name="nuclei_bMean" value="-5" step="0.01"><br><br>
+          
+          <label for="nuclei_threshold">nuclei_threshold:</label>
+          <input type="number" id="nuclei_threshold" name="nuclei_threshold" value="4" step="0.01"><br><br>
+        </div>
+      </form>
+      <input type="file" id="imageUpload" accept="image/*" />
+      <button id="reanalyse" style="visibility: hidden">Reanalyse with current parameters</button>
+    </div>
+      <button id="downloadZip" style="visibility: hidden;">Download Zip</button>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
       <script type="text/javascript">
       let pyodide;
@@ -69,11 +72,25 @@
         await pyodide.loadPackage(
           ["numpy", "matplotlib", "scikit-image", "opencv-python", "pandas"],
           {
-            messageCallback: (message) => {pyodidePackageMessage = message; console.log(message)},
+            messageCallback: pyodideLoaded,
             errorCallback: (err) => {pyodidePackageError = err; console.log(err)}
           }
         );
       };
+
+      function pyodideLoaded(message) {
+
+        pyodidePackageMessage = message;
+        console.log(message);
+
+        // Stop displaying loading message and display main app instead
+        if (pyodidePackageMessage.startsWith('Loaded')) {
+          let loadingMessage = document.querySelector("#loadingMessage");
+          loadingMessage.style = "display: none";
+          let appContainer = document.querySelector("#appContainer");
+          appContainer.style = "display: block";
+        }
+      }
       
       
       const body = document.querySelector("body");
