@@ -390,6 +390,7 @@ class DAB:
             for a in axes:
                 a.axis("off")
 
+        plt.tight_layout()
         img_out = io.BytesIO()
         fig.savefig(img_out, format="png")
         img_out.seek(0)
