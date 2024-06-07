@@ -27,8 +27,11 @@ function FileDropZone({fileList, setFileList}) {
     useEffect(() => {console.log({fileList})}, [fileList])
 
     async function uploadFiles(files) {
-        // Array destructuring so that we get an array of Files instead of a FileList object
-        setFileList([...files]);
+        // Array destructuring ([...files] so that we get an array of Files instead of a FileList object
+        // Then filter for MIME type of image/*
+        var imageFiles = [...files].filter((file) => {return file.type.startsWith('image/')});
+        setFileList(imageFiles);
+        
 
         // If we did it this way, we would allow you to add files to the files that are already
         // there instead of replacing them... but you could add the same file multiple times
@@ -36,6 +39,8 @@ function FileDropZone({fileList, setFileList}) {
     }
     async function onDrop(evt) {
         evt.preventDefault();
+        // Using fromEvent from this react-dropzone/file-selector library to convert drop event into file list
+        // is nice because it deals with both directories and files, and traverses directory trees
         const files = await fromEvent(evt);
         uploadFiles(files);
     };
