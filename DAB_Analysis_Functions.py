@@ -209,7 +209,7 @@ class DAB:
         return image_mask, current_params
 
     def analyse_DAB(
-        self, img, asyn_params=np.array([27, 6, 5, 15]), use_defaults=1, check_mask=1
+        self, img, filename, asyn_params=np.array([27, 6, 5, 15]), use_defaults=1, check_mask=0
     ):
         """analyse_DAB function
         takes file, and uses initial parameters and rate to separate out
@@ -218,6 +218,7 @@ class DAB:
 
         Args:
             img (np.ndarray): image data
+            filename (str): filename string
             asyn_params (np.1darry): initial default Lmean, aMean, bMean and threshold parameters
             nuclei_params (np.1darray): initial default Lmean, aMean, bMean and threshold parameters
 
@@ -248,17 +249,24 @@ class DAB:
         table_asyn["pseudo_circularity"] = self.pseudo_circularity(
             props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
         )
+        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"].values, 
+                                              filename, dtype='object')
+        
         asyn_cols = ["asyn_LMean", "asyn_aMean", "asyn_bMean", "asyn_threshold"]
         asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
+        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"].values, 
+                                              filename, dtype='object')
+
         return image_mask_asyn, table_asyn, asyn_params
 
     def analyse_DAB_and_cells(
         self,
         img,
+        filename,
         asyn_params=np.array([27, 6, 5, 15]),
         nuclei_params=np.array([70, 1, -5, 4]),
         use_defaults=1,
-        check_mask=1,
+        check_mask=0,
     ):
         """analyse_DAB_and_cells function
         takes file, and uses initial parameters and rate to separate out
@@ -267,6 +275,7 @@ class DAB:
 
         Args:
             img (np.ndarray): image data
+            filename (string): filename string
             asyn_params (np.1darry): initial default Lmean, aMean, bMean and threshold parameters
             nuclei_params (np.1darray): initial default Lmean, aMean, bMean and threshold parameters
 
@@ -311,6 +320,9 @@ class DAB:
         table_asyn["pseudo_circularity"] = self.pseudo_circularity(
             props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
         )
+        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"].values, 
+                                              filename, dtype='object')
+
 
         label_img_nucl = label(image_mask_nuclei)
         props_nuclei = regionprops_table(
@@ -321,9 +333,14 @@ class DAB:
         table_nuclei["pseudo_circularity"] = self.pseudo_circularity(
             props_nuclei["axis_major_length"], props_nuclei["axis_minor_length"]
         )
+        table_nuclei["filename"] = np.full_like(table_nuclei["axis_minor_length"].values, 
+                                              filename, dtype='object')
+
 
         asyn_cols = ["asyn_LMean", "asyn_aMean", "asyn_bMean", "asyn_threshold"]
         asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
+        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"].values, 
+                                              filename, dtype='object')
 
         nuclei_cols = [
             "nuclei_LMean",
@@ -332,6 +349,8 @@ class DAB:
             "nuclei_threshold",
         ]
         nuclei_params = pd.DataFrame([nucl_params], columns=nuclei_cols)
+        nuclei_params["filename"] = np.full_like(nuclei_params["nuclei_LMean"].values, 
+                                              filename, dtype='object')
 
         return (
             image_mask_asyn,
