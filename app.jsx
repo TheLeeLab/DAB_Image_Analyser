@@ -11,7 +11,6 @@ function HomePage() {
 }
 function FileZone() {
 
-
     const [fileList, setFileList] = useState([]);
 
     return (
@@ -47,13 +46,9 @@ function FileDropZone({fileList, setFileList}) {
     };
 
     return (
-        <>
         <div
-            // onDragEnter={onDragEnter}
-            // onDragLeave={onDragLeave}
             onDragOver={onDragOver}
             onDrop={onDrop}
-            // className={tailwindClasses}
             className="flex items-center justify-center w-full"
         >
             <div className="max-w-2xl mx-auto">
@@ -68,7 +63,6 @@ function FileDropZone({fileList, setFileList}) {
                 </div>
             </div>
         </div>
-        </>
     )
 }
 
@@ -86,12 +80,29 @@ function FileDisplayZone({fileList}) {
                 {fileList.map((file, index)=>(
                     <tr className="flex w-full mb-4" key={index}>
                         <td className="p-4 w-1/3">{file.name}</td>
-                        <td className="p-4 w-1/3">{file.name}</td>
+                        <td className="p-4 w-1/3"><ImageFileViewer file={file} /></td>
                     </tr>
                 ))}
             </tbody>
         </table>
     )
+}
+
+function ImageFileViewer({file}) {
+
+    const [imgSrc, setImgSrc] = useState('');
+
+    useEffect(() => {
+        // Only set imgSrc once FileReader has loaded
+        const reader = new FileReader()
+
+        reader.onloadend = () => {
+          setImgSrc(reader.result)
+        }
+        reader.readAsDataURL(file)
+    }, [file])
+
+    return <img src={imgSrc}/>
 }
 
 const root = ReactDOM.createRoot(app);
