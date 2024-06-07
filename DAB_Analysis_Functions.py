@@ -249,12 +249,12 @@ class DAB:
         table_asyn["pseudo_circularity"] = self.pseudo_circularity(
             props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
         )
-        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"].values, 
+        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"], 
                                               filename, dtype='object')
         
         asyn_cols = ["asyn_LMean", "asyn_aMean", "asyn_bMean", "asyn_threshold"]
         asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
-        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"].values, 
+        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"], 
                                               filename, dtype='object')
 
         return image_mask_asyn, table_asyn, asyn_params
@@ -320,7 +320,7 @@ class DAB:
         table_asyn["pseudo_circularity"] = self.pseudo_circularity(
             props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
         )
-        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"].values, 
+        table_asyn["filename"] = np.full_like(props_asyn["axis_minor_length"], 
                                               filename, dtype='object')
 
 
@@ -333,13 +333,13 @@ class DAB:
         table_nuclei["pseudo_circularity"] = self.pseudo_circularity(
             props_nuclei["axis_major_length"], props_nuclei["axis_minor_length"]
         )
-        table_nuclei["filename"] = np.full_like(table_nuclei["axis_minor_length"].values, 
+        table_nuclei["filename"] = np.full_like(table_nuclei["axis_minor_length"], 
                                               filename, dtype='object')
 
 
         asyn_cols = ["asyn_LMean", "asyn_aMean", "asyn_bMean", "asyn_threshold"]
         asyn_params = pd.DataFrame([asyn_params], columns=asyn_cols)
-        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"].values, 
+        asyn_params["filename"] = np.full_like(asyn_params["asyn_LMean"], 
                                               filename, dtype='object')
 
         nuclei_cols = [
@@ -349,7 +349,7 @@ class DAB:
             "nuclei_threshold",
         ]
         nuclei_params = pd.DataFrame([nucl_params], columns=nuclei_cols)
-        nuclei_params["filename"] = np.full_like(nuclei_params["nuclei_LMean"].values, 
+        nuclei_params["filename"] = np.full_like(nuclei_params["nuclei_LMean"], 
                                               filename, dtype='object')
 
         return (

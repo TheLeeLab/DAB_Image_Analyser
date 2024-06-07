@@ -45,7 +45,7 @@ def analyse_image(image, file):
 
     Args:
         img (np.ndarray): image data
-        filename (str): filename string"""
+        file (str): filename string"""
         
     asyn_LMean = document.getElementById("asyn_LMean").value
     asyn_aMean = document.getElementById("asyn_aMean").value
