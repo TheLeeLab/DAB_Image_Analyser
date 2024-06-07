@@ -39,7 +39,14 @@ for f in files:
     os.remove(os.path.join(dataDirectory, f))
 
 
-def analyse_image(image):
+def analyse_image(image, file):
+    """analyse_image function
+    takes image and filename and analyses the image for display
+
+    Args:
+        img (np.ndarray): image data
+        filename (str): filename string"""
+        
     asyn_LMean = document.getElementById("asyn_LMean").value
     asyn_aMean = document.getElementById("asyn_aMean").value
     asyn_bMean = document.getElementById("asyn_bMean").value
@@ -61,6 +68,7 @@ def analyse_image(image):
             nuclei_params,
         ) = D.analyse_DAB_and_cells(
             image,
+            file,
             asyn_params=np.array(
                 [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold], dtype=np.float64
             ),
@@ -74,6 +82,7 @@ def analyse_image(image):
     else:
         image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(
             image,
+            file,
             asyn_params=np.array(
                 [asyn_LMean, asyn_aMean, asyn_bMean, asyn_threshold], dtype=np.float64
             ),
@@ -111,4 +120,4 @@ def analyse_image(image):
     reanalyseButton.style = "visibility: visible"
 
 
-analyse_image(data)
+analyse_image(data, file)
