@@ -4,24 +4,39 @@ const {fromEvent} = fileSelector;
 const app = document.getElementById('app');
 
 function HomePage() {
-    const [pyodideOutput, setPyodideOutput] = useState('');
-    useEffect(() => {console.log(pyodideOutput)}, [pyodideOutput])
+    const [pythonOutput, setPythonOutput] = useState('');
+    const [pythonCode, setPythonCode] = useState('');
+    // useEffect(() => {console.log(pythonOutput)}, [pythonOutput])
     return (
         <div>
-            <FileZone />
-            <Pyodide pythonCode="hello('Joe')" pyodideOutput={pyodideOutput} setPyodideOutput={setPyodideOutput}/>
+            <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} />
+            <Pyodide pythonCode={pythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput}/>
         </div>
     );
 }
-function FileZone() {
+function FileZone({setPythonCode, pythonOutput}) {
 
     const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
 
+    useEffect(() => {
+        if (dabAnalysisImages.length > 0 && pythonOutput) {
+            let pythonOutputObject = JSON.parse(pythonOutput.toString());
+            let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
+            dabAnalysisImage.outputImage = pythonOutputObject.result
+            setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
+        }
+    }, [pythonOutput])
+
     function preview(id) {
-        let dabAnalysisImage = dabAnalysisImages[id]
-        dabAnalysisImage.outputImage = 'processed' // TODO: temporary placeholder
-        // Replace outputImage of dabAnalysisImage at index with processed image
-        setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}));
+        // TODO: Setting the processing message first won't actually work, because these are asynchronous,
+        // so we can't be sure that they will happen in the right order.
+        // // Set processing message
+        // let dabAnalysisImage = dabAnalysisImages[id]
+        // dabAnalysisImage.outputImage = `processing file ${dabAnalysisImages[id].file.name}`
+        // setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
+        
+        // Run python
+        setPythonCode('json.dumps({"id": ' + id + ', "result": hello("' + dabAnalysisImages[id].file.name + '")})')
     }
 
     return (
@@ -46,7 +61,6 @@ function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
 
         // Create new data structure to store images and results together
         var dabAnalysisImages = imageFiles.map((file) => {return {file: file, outputImage: undefined, outputCsv: undefined}})
-        console.log(dabAnalysisImages);
         setDabAnalysisImages(dabAnalysisImages);
     }
     async function onDrop(evt) {
@@ -125,9 +139,8 @@ function ImageFileViewer({file}) {
 }
 
 function OutputPreviewViewer({dabImage, id, preview}) {
-    console.log(dabImage)
     if (dabImage && dabImage.outputImage) {
-        return <div>Analysed image preview goes here</div>
+        return <div>{dabImage.outputImage}</div>
     } else {
         return <button onClick={() => {preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
     }

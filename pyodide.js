@@ -3,7 +3,7 @@
 
 function Pyodide({
   pythonCode,
-  setPyodideOutput
+  setPythonOutput
 }) {
   const pyodide = useRef(null)
   const [isPyodideLoading, setIsPyodideLoading] = useState(true)
@@ -31,11 +31,15 @@ function Pyodide({
             import os
             import numpy as np
             import shutil
+            import json
             
             from DAB_Analysis_Functions import DAB
 
             def hello(name):
-                return f'Hello {name}'
+                # Simulate long-running function
+                import time
+                time.sleep(3)
+                return f'Hello from python, this is the result of processing "{name}"'
             
             D = DAB()
         `)
@@ -56,7 +60,7 @@ function Pyodide({
         }
       }
       ;(async function () {
-        setPyodideOutput(await evaluatePython(pyodide.current, pythonCode))
+        setPythonOutput(await evaluatePython(pyodide.current, pythonCode))
       })()
     }
   }, [isPyodideLoading, pyodide, pythonCode])
