@@ -11,31 +11,39 @@ function HomePage() {
 }
 function FileZone() {
 
-    const [fileList, setFileList] = useState([]);
+    const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
+
+    function preview(id) {
+        let dabAnalysisImage = dabAnalysisImages[id]
+        dabAnalysisImage.outputImage = 'processed' // TODO: temporary placeholder
+        // Replace outputImage of dabAnalysisImage at index with processed image
+        setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}));
+    }
 
     return (
         <>
-            <FileDropZone fileList={fileList} setFileList={setFileList}/>
-            <FileDisplayZone fileList={fileList} />
+            <FileDropZone dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages}/>
+            <FileDisplayZone dabAnalysisImages={dabAnalysisImages} preview={preview}/>
         </>
     )
 }
 
-function FileDropZone({fileList, setFileList}) {
 
-    // Display fileList in console whenever it changes
-    useEffect(() => {console.log({fileList})}, [fileList])
+
+function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
+
+    // Display dabAnalysisImages in console whenever it changes
+    useEffect(() => {console.log({dabAnalysisImages})}, [dabAnalysisImages])
 
     async function uploadFiles(files) {
-        // Array destructuring ([...files] so that we get an array of Files instead of a FileList object
+        // Array destructuring ([...files] so that we get an array of Files instead of a DabAnalysisImages object
         // Then filter for MIME type of image/*
         var imageFiles = [...files].filter((file) => {return file.type.startsWith('image/')});
-        setFileList(imageFiles);
-        
 
-        // If we did it this way, we would allow you to add files to the files that are already
-        // there instead of replacing them... but you could add the same file multiple times
-        // setFileList([...fileList, ...files]);
+        // Create new data structure to store images and results together
+        var dabAnalysisImages = imageFiles.map((file) => {return {file: file, outputImage: undefined, outputCsv: undefined}})
+        console.log(dabAnalysisImages);
+        setDabAnalysisImages(dabAnalysisImages);
     }
     async function onDrop(evt) {
         evt.preventDefault();
@@ -71,7 +79,8 @@ function FileDropZone({fileList, setFileList}) {
     )
 }
 
-function FileDisplayZone({fileList}) {
+function FileDisplayZone({dabAnalysisImages, preview}) {
+
     return (
         <table className="text-left w-full h-dvh">
             <thead className="bg-black flex text-white w-full">
@@ -82,10 +91,11 @@ function FileDisplayZone({fileList}) {
 			</tr>
 		</thead>
             <tbody className="bg-grey-light flex flex-col items-center justify-between overflow-auto w-full h-full">
-                {fileList.map((file, index)=>(
+                {dabAnalysisImages.map((file, index)=>(
                     <tr className="flex w-full mb-4" key={index}>
-                        <td className="p-4 w-1/3">{file.name}</td>
-                        <td className="p-4 w-1/3"><ImageFileViewer file={file} /></td>
+                        <td className="p-4 w-1/3">{file.file.name}</td>
+                        <td className="p-4 w-1/3"><ImageFileViewer file={file.file} /></td>
+                        <td className="p-4 w-1/3"><OutputPreviewViewer dabImage={file} id={index} preview={preview} /></td>
                     </tr>
                 ))}
             </tbody>
@@ -108,6 +118,16 @@ function ImageFileViewer({file}) {
     }, [file])
 
     return <img src={imgSrc}/>
+}
+
+function OutputPreviewViewer({dabImage, id, preview}) {
+    console.log(dabImage)
+    if (dabImage && dabImage.outputImage) {
+        return <div>Analysed image preview goes here</div>
+    } else {
+        return <button onClick={() => {preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
+    }
+
 }
 
 const root = ReactDOM.createRoot(app);
