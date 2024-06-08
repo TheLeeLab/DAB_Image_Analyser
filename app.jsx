@@ -1,11 +1,15 @@
-const {useState, useEffect} = React;
+const {useRef, useState, useEffect} = React;
 const {fromEvent} = fileSelector;
+
 const app = document.getElementById('app');
 
 function HomePage() {
+    const [pyodideOutput, setPyodideOutput] = useState('');
+    useEffect(() => {console.log(pyodideOutput)}, [pyodideOutput])
     return (
         <div>
             <FileZone />
+            <Pyodide pythonCode="hello('Joe')" pyodideOutput={pyodideOutput} setPyodideOutput={setPyodideOutput}/>
         </div>
     );
 }
