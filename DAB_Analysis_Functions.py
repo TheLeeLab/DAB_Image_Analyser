@@ -386,7 +386,8 @@ class DAB:
             masks (np.ndarry): mask data
 
         Returns:
-            imgdata (bytes): figure in bytes"""
+            fig (object): figure object
+            axes (object): axis object"""
         import matplotlib.pyplot as plt
 
         if isinstance(masks, type(None)):
@@ -410,10 +411,4 @@ class DAB:
             for a in axes:
                 a.axis("off")
 
-        plt.tight_layout()
-        img_out = io.BytesIO()
-        fig.savefig(img_out, format="png")
-        img_out.seek(0)
-        imgdata = img_out.read()
-
-        return imgdata
+        return fig, axes
