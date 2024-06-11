@@ -4,7 +4,8 @@
 function Pyodide({
   pythonCode,
   setPythonOutput,
-  dabAnalysisImages
+  dabAnalysisImages,
+  setPythonCode
 }) {
   const pyodide = useRef(null)
   const [isPyodideLoading, setIsPyodideLoading] = useState(true)
@@ -41,7 +42,7 @@ function Pyodide({
 
             D = DAB()
 
-            def analysispreview(id, name):
+            def analysispreview(id, name, **kwargs):
                 filename = f'{id}-{name}'
                 input_dir = 'input'
                 output_dir = 'output-preview'
@@ -50,8 +51,10 @@ function Pyodide({
                 if os.path.exists(input_filepath):
                     # TODO: error handling if imread fails
                     data = D.imread(input_filepath)
-                    image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(data, filename)
+                    image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(data, filename, **kwargs)
                     fig, axes = D.plot_masks(data, image_mask_asyn)
+                    if os.path.exists(output_filepath):
+                        os.remove(output_filepath)
                     fig.savefig(output_filepath)
 
                     # Output as b64 string to send to JS
@@ -74,7 +77,7 @@ function Pyodide({
 
   // evaluate python code with pyodide and set output
   useEffect(() => {
-    if (!isPyodideLoading && allDataLoaded) {
+    if (!isPyodideLoading && allDataLoaded && pythonCode.length > 0) {
       const evaluatePython = async (pyodide, pythonCode) => {
         try {
           return await pyodide.runPython(pythonCode)
@@ -85,6 +88,9 @@ function Pyodide({
       }
       (async function () {
         setPythonOutput(await evaluatePython(pyodide.current, pythonCode))
+        // Reset pythonCode to empty string after using it
+        // TODO: Avoid this pattern
+        setPythonCode('')
       })()
     }
   }, [isPyodideLoading, pyodide, pythonCode, allDataLoaded])

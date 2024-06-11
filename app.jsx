@@ -7,15 +7,29 @@ function HomePage() {
     const [pythonOutput, setPythonOutput] = useState('');
     const [pythonCode, setPythonCode] = useState('');
     const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
+    const [parameters, setParameters] = useState({
+        "asyn_LMean": 27,
+        "asyn_aMean": 6,
+        "asyn_bMean": 5,
+        "asyn_threshold": 15,
+        'analyseNuclei': false,
+        "nuclei_LMean": 70,
+        "nuclei_aMean": 1,
+        "nuclei_bMean": -5,
+        "nuclei_threshold": 4,
+    });
     // useEffect(() => {console.log(pythonOutput)}, [pythonOutput])
     return (
-        <div>
-            <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
-            <Pyodide pythonCode={pythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
-        </div>
+        <>
+            <div className="grid grid-cols-2">
+                <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} parameters={parameters}/>
+                <ParameterForm parameters={parameters} setParameters={setParameters}  dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
+            </div>
+            <Pyodide pythonCode={pythonCode} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
+            </>
     );
 }
-function FileZone({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages}) {
+function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImages, setDabAnalysisImages, parameters}) {
 
     
 
@@ -25,6 +39,9 @@ function FileZone({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysi
             let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
             dabAnalysisImage.outputImage = pythonOutputObject.result
             setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
+            // Reset pythonOutput to empty string after using it
+            // TODO: Avoid this pattern
+            setPythonOutput('')
         }
     }, [pythonOutput])
 
@@ -37,13 +54,13 @@ function FileZone({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysi
         // setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
         
         // Run python
-        setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '")})')
+        setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '", asyn_params=np.array([' + [parameters.asyn_LMean, parameters.asyn_aMean, parameters.asyn_bMean, parameters.asyn_threshold].toString() + ']))})')
     }
 
     return (
         <>
             <FileDropZone dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
-            <FileDisplayZone dabAnalysisImages={dabAnalysisImages} preview={preview}/>
+            <FileDisplayZone dabAnalysisImages={dabAnalysisImages} preview={preview} parameters={parameters}/>
         </>
     )
 }
@@ -103,7 +120,7 @@ function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
     )
 }
 
-function FileDisplayZone({dabAnalysisImages, preview}) {
+function FileDisplayZone({dabAnalysisImages, preview, parameters}) {
 
     return (
         <table className="text-left w-full h-dvh">
@@ -151,6 +168,56 @@ function OutputPreviewViewer({dabImage, id, preview}) {
         return <button onClick={() => {preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
     }
 
+}
+
+function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnalysisImages}) {
+
+    function setParametersFromForm (evt) {
+        // When the form values change, update the parameters state so that the
+        // entry with key evt.target.name (e.g. asyn_LMean) has the new value
+        // but other value stay the same
+        setParameters({ ...parameters, [evt.target.name]: evt.target.value});
+
+        // Remove preview images
+        setDabAnalysisImages(dabAnalysisImages.map((dabAnalysisImage) => { return {...dabAnalysisImage, outputImage: undefined} }))
+    }
+    return (
+        <div className="grid grid-cols-1">
+            <form id="parameterForm" onChange={setParametersFromForm}>
+
+                <div id="asynParameters" className="grid grid-cols-1">
+                    <label htmlFor="asyn_LMean">asyn_LMean:</label>
+                    <input type="number" id="asyn_LMean" name="asyn_LMean" defaultValue={parameters["asyn_LMean"]} step="0.01" />
+                    
+                    <label htmlFor="asyn_aMean">asyn_aMean:</label>
+                    <input type="number" id="asyn_aMean" name="asyn_aMean" defaultValue={parameters["asyn_aMean"]} step="0.01" />
+                    
+                    <label htmlFor="asyn_bMean">asyn_bMean:</label>
+                    <input type="number" id="asyn_bMean" name="asyn_bMean" defaultValue={parameters["asyn_bMean"]} step="0.01" />
+                    
+                    <label htmlFor="asyn_threshold">asyn_threshold:</label>
+                    <input type="number" id="asyn_threshold" name="asyn_threshold" defaultValue={parameters["asyn_threshold"]} step="0.01" />
+                </div>
+
+                <label htmlFor="analyseNuclei">Analyse Nuclei?:</label>
+                <input type="checkbox" id="analyseNuclei"/>
+
+                <div id="nucleiParameters" className={`${ parameters['analyseNuclei'] ? '': 'hidden'}`}>
+                    <label htmlFor="nuclei_LMean">nuclei_LMean:</label>
+                    <input type="number" id="nuclei_LMean" name="nuclei_LMean" defaultValue={parameters["nuclei_LMean"]} step="0.01" />
+                    
+                    <label htmlFor="nuclei_aMean">nuclei_aMean:</label>
+                    <input type="number" id="nuclei_aMean" name="nuclei_aMean" defaultValue={parameters["nuclei_aMean"]} step="0.01" />
+                    
+                    <label htmlFor="nuclei_bMean">nuclei_bMean:</label>
+                    <input type="number" id="nuclei_bMean" name="nuclei_bMean" defaultValue={parameters["nuclei_bMean"]} step="0.01" />
+                    
+                    <label htmlFor="nuclei_threshold">nuclei_threshold:</label>
+                    <input type="number" id="nuclei_threshold" name="nuclei_threshold" defaultValue={parameters["nuclei_threshold"]} step="0.01" />
+                </div>
+            </form>
+        </div>
+    )
 }
 
 const root = ReactDOM.createRoot(app);
