@@ -6,17 +6,18 @@ const app = document.getElementById('app');
 function HomePage() {
     const [pythonOutput, setPythonOutput] = useState('');
     const [pythonCode, setPythonCode] = useState('');
+    const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
     // useEffect(() => {console.log(pythonOutput)}, [pythonOutput])
     return (
         <div>
-            <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} />
-            <Pyodide pythonCode={pythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput}/>
+            <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
+            <Pyodide pythonCode={pythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
         </div>
     );
 }
-function FileZone({setPythonCode, pythonOutput}) {
+function FileZone({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages}) {
 
-    const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
+    
 
     useEffect(() => {
         if (dabAnalysisImages.length > 0 && pythonOutput) {
@@ -36,12 +37,12 @@ function FileZone({setPythonCode, pythonOutput}) {
         // setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
         
         // Run python
-        setPythonCode('json.dumps({"id": ' + id + ', "result": hello("' + dabAnalysisImages[id].file.name + '")})')
+        setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '")})')
     }
 
     return (
         <>
-            <FileDropZone dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages}/>
+            <FileDropZone dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
             <FileDisplayZone dabAnalysisImages={dabAnalysisImages} preview={preview}/>
         </>
     )
@@ -52,7 +53,7 @@ function FileZone({setPythonCode, pythonOutput}) {
 function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
 
     // Display dabAnalysisImages in console whenever it changes
-    useEffect(() => {console.log({dabAnalysisImages})}, [dabAnalysisImages])
+    useEffect(() => {console.log(dabAnalysisImages)}, [dabAnalysisImages])
 
     async function uploadFiles(files) {
         // Array destructuring ([...files] so that we get an array of Files instead of a DabAnalysisImages object
@@ -62,6 +63,7 @@ function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
         // Create new data structure to store images and results together
         var dabAnalysisImages = imageFiles.map((file) => {return {file: file, outputImage: undefined, outputCsv: undefined}})
         setDabAnalysisImages(dabAnalysisImages);
+
     }
     async function onDrop(evt) {
         evt.preventDefault();
@@ -140,7 +142,7 @@ function ImageFileViewer({file}) {
 
 function OutputPreviewViewer({dabImage, id, preview}) {
     if (dabImage && dabImage.outputImage) {
-        return <div>{dabImage.outputImage}</div>
+        return <img src={`data:image/png;base64,${dabImage.outputImage}`}></img>
     } else {
         return <button onClick={() => {preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
     }
