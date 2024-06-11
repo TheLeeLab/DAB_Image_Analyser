@@ -92,7 +92,7 @@ function Pyodide({
   // write to pyodide FS
   useEffect(() => {
 
-    if (!isPyodideLoading && dabAnalysisImages && !allDataLoaded) {
+    if (!isPyodideLoading && dabAnalysisImages.length > 0 && !allDataLoaded) {
         const writeFiles = async (pyodide, dabAnalysisImages) => {
           await pyodide.runPython("os.mkdir('input'); os.mkdir('output-preview'); os.mkdir('output-final')");
           const fileWrittenPromises = dabAnalysisImages.map((dabAnalysisImage, ind) => {
