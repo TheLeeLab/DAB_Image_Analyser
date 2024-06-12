@@ -269,7 +269,7 @@ class DAB:
             axes.imshow(img)
             axes.axis("off")
         else:
-            fig, axes = plt.subplots(1, 1, sharey=True)
+            fig, axes = plt.subplots(1, 1)
 
             axes.imshow(img)
             if len(masks.shape) > 2:  # if multiple masks
