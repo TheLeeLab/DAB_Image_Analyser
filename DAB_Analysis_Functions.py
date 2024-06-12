@@ -145,7 +145,7 @@ class DAB:
         if thresh > 0.025:
             mask = holes > thresh
         else:
-            mask = np.full_like(thresh, False)
+            mask = np.full_like(holes, False)
         return mask
 
     def analyse_DAB(self, img, filename):
