@@ -66,34 +66,29 @@ class DAB:
         )
         return p_circ
 
-    def clean_nuclear_mask(self, image_mask):
-        """clean_nuclear_mask function
-        takes image_mask, and cleans up nuclei
+    def clean_nuclear_mask(self, mask):
+        """ clean_nuclear_mask function
+        takes mask, and cleans up nuclei
         removes 3*3 (i.e. diffraction limited) objects
-        clears border, connects larger nuclei if small "holes" inside, etc
-
-        Args:
-            image_mask (np.2darray): logical array of image mask
-
-        Returns:
-            cleaned_mask (np.2darray): cleaned up mask"""
-        mask_disk = 1 * ski.morphology.binary_closing(
-            image_mask, ski.morphology.disk(3)
-        )
+        clears border, connects larger aggregates if small "holes" inside, etc
+        ================INPUTS============= 
+        mask is logical array of image mask
+        ================OUTPUT============= 
+        cleaned_mask is cleaned up mask """
+        mask_disk = 1*ski.morphology.binary_closing(mask, ski.morphology.disk(1))
         seed = np.copy(mask_disk)
         seed[1:-1, 1:-1] = mask_disk.max()
-
-        mask_filled = ski.morphology.reconstruction(seed, mask_disk, method="erosion")
-        cleaned_mask = 1 * ski.morphology.binary_closing(
-            mask_filled, ski.morphology.disk(2)
-        )
-
+        
+        mask_filled = ski.morphology.reconstruction(seed, mask_disk, method='erosion')
+        cleaned_mask = ski.segmentation.clear_border(mask_filled)
+       
         label_img = label(cleaned_mask)
-        props = regionprops_table(label_img, properties=("area", "axis_minor_length"))
-        Area = props["area"]
-        indices_toremove = np.unique(np.unique(label_img)[1:] * (Area < 60))[1:]
-        image_mask = np.isin(label_img, indices_toremove)
-        cleaned_mask[image_mask] = 0
+        props = regionprops_table(label_img, properties=('area',
+                                                         'axis_minor_length'))
+        Area = props['area']
+        indices_toremove = np.unique(np.unique(label_img)[1:]*(Area < 60))[1:]
+        mask=np.isin(label_img,indices_toremove)
+        cleaned_mask[mask] = 0
         return cleaned_mask
 
     def clean_protein_mask(self, image_mask):
@@ -282,5 +277,5 @@ class DAB:
                 axes.contour(masks, [0.5], linewidths=0.5, colors="darkred")
 
             axes.axis("off")
-
+        
         return fig, axes
