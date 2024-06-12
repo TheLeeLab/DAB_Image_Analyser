@@ -95,7 +95,7 @@ function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
 
     return (
         <div id="static-modal" data-modal-backdrop="static" tabIndex="-1" aria-hidden="true"
-        className={`${dabAnalysisImages.length > 0 ? 'hidden': ''} overflow-y-hidden overflow-x-hidden fixed top-0 right-0 bottom-0 left-0 z-50 flex h-screen justify-center items-center`
+        className={`${dabAnalysisImages.length > 0 ? 'hidden': ''} overflow-y-hidden overflow-x-hidden fixed top-0 right-0 bottom-0 left-0 z-50 flex h-screen justify-center items-center bg-gray-300 bg-opacity-50 `
         }>
             <div
                 onDragOver={onDragOver}
@@ -104,9 +104,9 @@ function FileDropZone({dabAnalysisImages, setDabAnalysisImages}) {
             >
                 <div className="h-full w-full mx-[10rem] items-center justify-center">
                     <div className="flex flex-col w-full h-full items-center justify-center">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-full m-10 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                            <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-full m-10 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                            <svg className="w-10 h-10 mb-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <p className="mb-2 text-sm text-black text-center"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                         </label>
                         {/* Note: File selector in HTML file input doesn't support choosing both files and directories from the same dialog.
                         For now, drag and drop, or highlight multiple files if you want to upload a whole directory at once */}
@@ -142,6 +142,26 @@ function FileDisplayZone({dabAnalysisImages, preview, parameters}) {
     )
 }
 
+function ZoomableImage({src}) {
+    const [zoomed, setZoomed] = useState(false);
+    const divZoomedClasses = "overflow-y-hidden overflow-x-hidden fixed top-0 right-0 bottom-0 left-0 z-50 flex justify-center items-center w-full h-full m-0 bg-gray-300 bg-opacity-50  cursor-zoom-out";
+    const divUnzoomedClasses = "cursor-zoom-in h-30";
+    const imgZoomedClasses = "object-scale-down h-[calc(100vh-2rem)] border-2 border-gray-300 border-dashed rounded-lg ";
+    const imgUnzoomedClasses= "object-scale-down h-full";
+    return (
+        <>
+            {/* Show unzoomed version at all times so layout isn't messed up during zoom */}
+            <div className={divUnzoomedClasses} onClick={() => {setZoomed(true)}}>
+                <img src={src} className={imgUnzoomedClasses}/>
+            </div>
+            {/* Show zoomed version only when 'zoomed' is true */}
+            {zoomed && <div className={divZoomedClasses} onClick={() => {setZoomed(false)}}>
+                <img src={src} className={imgZoomedClasses}/>
+            </div>}
+        </>
+    )
+}
+
 function ImageFileViewer({file}) {
 
     const [imgSrc, setImgSrc] = useState('');
@@ -156,7 +176,7 @@ function ImageFileViewer({file}) {
         reader.readAsDataURL(file)
     }, [file])
 
-    return <img src={imgSrc}/>
+    return <ZoomableImage src={imgSrc}/>
 }
 
 function OutputPreviewViewer({dabImage, id, preview}) {
@@ -164,7 +184,7 @@ function OutputPreviewViewer({dabImage, id, preview}) {
         // this is not a very responsive way of putting up a 'running' message
         return <p>Running...</p>
     } else if (dabImage && dabImage.outputImage) {
-        return <img src={`data:image/png;base64,${dabImage.outputImage}`}></img>
+        return <ZoomableImage src={`data:image/png;base64,${dabImage.outputImage}`} />
     } else {
         return (
             <>
