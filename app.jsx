@@ -7,18 +7,7 @@ function HomePage() {
     const [pythonOutput, setPythonOutput] = useState('');
     const [pythonCode, setPythonCode] = useState('');
     const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
-    const [parameters, setParameters] = useState({
-        "asyn_LMean": 27,
-        "asyn_aMean": 6,
-        "asyn_bMean": 5,
-        "asyn_threshold": 15,
-        'analyseNuclei': false,
-        "nuclei_LMean": 70,
-        "nuclei_aMean": 1,
-        "nuclei_bMean": -5,
-        "nuclei_threshold": 4,
-    });
-    // useEffect(() => {console.log(pythonOutput)}, [pythonOutput])
+    const [parameters, setParameters] = useState({'analyseNuclei': false});
     return (
         <>
             <div className="grid grid-cols-2">
@@ -34,7 +23,7 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
     
 
     useEffect(() => {
-        if (dabAnalysisImages.length > 0 && pythonOutput) {
+        if (dabAnalysisImages.length > 0 && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
             let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
             dabAnalysisImage.outputImage = pythonOutputObject.result
@@ -52,7 +41,16 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
         await setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
         
         // Run python
-        await setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '", asyn_params=np.array([' + [parameters.asyn_LMean, parameters.asyn_aMean, parameters.asyn_bMean, parameters.asyn_threshold].toString() + ']))})')
+        await setPythonCode(
+            `json.dumps({
+                "id": ${id},
+                "result": analysispreview(
+                    ${id},
+                    "${dabAnalysisImages[id].file.name}",
+                    analyse_nuclei=${parameters.analyseNuclei ? "True" : "False"}
+                    )
+                })`
+        )
     }
 
     return (
@@ -216,7 +214,11 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
         // When the form values change, update the parameters state so that the
         // entry with key evt.target.name (e.g. asyn_LMean) has the new value
         // but other value stay the same
-        setParameters({ ...parameters, [evt.target.name]: evt.target.value});
+        if (evt.target.type == "checkbox") {
+            setParameters({ ...parameters, [evt.target.name]: evt.target.checked});
+        } else {
+            setParameters({ ...parameters, [evt.target.name]: evt.target.value});
+        }
 
         // Remove preview images
         setDabAnalysisImages(dabAnalysisImages.map((dabAnalysisImage) => { return {...dabAnalysisImage, outputImage: undefined} }))
@@ -230,7 +232,7 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
 
                 <form id="parameterForm" onChange={setParametersFromForm} className="w-full max-w-lg">
 
-                    <div id="asynParameters" className="w-full">
+                    {/* <div id="asynParameters" className="w-full">
                         <div className="w-full px-3 mb-6">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_LMean">asyn_LMean:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_LMean" name="asyn_LMean" defaultValue={parameters["asyn_LMean"]} step="0.01" />
@@ -250,15 +252,15 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_threshold">asyn_threshold:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_threshold" name="asyn_threshold" defaultValue={parameters["asyn_threshold"]} step="0.01" />
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* TODO: Remove analyseNuclei button from being hidden when nuclei analysis enabled*/}
-                    <div className="hidden w-full px-3 mb-6">
+                    <div className="w-full px-3 mb-6">
                         <label htmlFor="analyseNuclei" className="w-4 h-4 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" >Analyse Nuclei?:</label>
-                        <input type="checkbox" id="analyseNuclei" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"/>
+                        <input type="checkbox" id="analyseNuclei" name="analyseNuclei" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"/>
                     </div>
 
-                    <div id="nucleiParameters" className={`${ parameters['analyseNuclei'] ? '': 'hidden'}`}>
+                    {/* <div id="nucleiParameters" className={`${ parameters['analyseNuclei'] ? '': 'hidden'}`}>
                         <label htmlFor="nuclei_LMean">nuclei_LMean:</label>
                         <input type="number" id="nuclei_LMean" name="nuclei_LMean" defaultValue={parameters["nuclei_LMean"]} step="0.01" />
                         
@@ -270,7 +272,7 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
                         
                         <label htmlFor="nuclei_threshold">nuclei_threshold:</label>
                         <input type="number" id="nuclei_threshold" name="nuclei_threshold" defaultValue={parameters["nuclei_threshold"]} step="0.01" />
-                    </div>
+                    </div> */}
                 </form>
             </div>
             <div className="flex justify-center">

@@ -42,7 +42,7 @@ function Pyodide({
 
             D = DAB()
 
-            def analysispreview(id, name, **kwargs):
+            def analysispreview(id, name, analyse_nuclei=False):
                 filename = f'{id}-{name}'
                 input_dir = 'input'
                 output_dir = 'output-preview'
@@ -51,8 +51,13 @@ function Pyodide({
                 if os.path.exists(input_filepath):
                     # TODO: error handling if imread fails
                     data = D.imread(input_filepath)
-                    image_mask_asyn, table_asyn, asyn_params = D.analyse_DAB(data, filename, **kwargs)
-                    fig, axes = D.plot_masks(data, image_mask_asyn)
+                    if analyse_nuclei:
+                        image_mask_asyn, table_asyn, image_mask_nuclei, table_nuclei = D.analyse_DAB_and_cells(data, filename)
+                        masks = np.dstack([image_mask_asyn, image_mask_nuclei])
+                    else:
+                        image_mask_asyn, table_asyn = D.analyse_DAB(data, filename)
+                        masks = image_mask_asyn
+                    fig, axes = D.plot_masks(data, masks)
                     if os.path.exists(output_filepath):
                         os.remove(output_filepath)
                     fig.savefig(output_filepath)
