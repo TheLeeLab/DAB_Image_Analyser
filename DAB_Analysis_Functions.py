@@ -128,21 +128,24 @@ class DAB:
         return cleaned_mask
 
     def otsu_filtering(self, image):
-        """otsu threshold a single colour image
-
+        """ otsu threshold a single colour image
+        
         Args:
             image (np.2darray): single grayscale image
         Returns:
             mask (np.2darray): single boolean mask image"""
-
+            
         seed = np.copy(image)
         seed[1:-1, 1:-1] = image.max()
         mask = image
-
-        filled = reconstruction(seed, mask, method="erosion")
-        holes = np.abs(image - filled)
+        
+        filled = reconstruction(seed, mask, method='erosion')
+        holes = np.abs(image-filled)
         thresh = threshold_otsu(holes)
-        mask = holes > thresh
+        if thresh > 0.025:
+            mask = holes > thresh
+        else:
+            mask = np.full_like(thresh, False)
         return mask
 
     def analyse_DAB(self, img, filename):
