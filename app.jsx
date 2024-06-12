@@ -171,7 +171,22 @@ function ImageFileViewer({file}) {
         const reader = new FileReader()
 
         reader.onloadend = () => {
-          setImgSrc(reader.result)
+          // Check image MIME type using start of base64 string
+          if (reader.result.startsWith("data:image/tiff")) {
+            // If tiff image, we need Array Buffer instead of DataURL
+            const tiffReader = new FileReader()
+            tiffReader.onloadend = () => {
+                Tiff.initialize({TOTAL_MEMORY: 16777216 * 10});
+                var tiff = new Tiff({buffer: tiffReader.result});
+                // Create canvas with image, then convert that canvas to a base64 DataURL
+                // to set as img src
+                setImgSrc(tiff.toCanvas().toDataURL());
+            }
+            tiffReader.readAsArrayBuffer(file)
+          } else {
+            // If other image, just directly set the base64 DataURL as img src
+            setImgSrc(reader.result);
+          }
         }
         reader.readAsDataURL(file)
     }, [file])
