@@ -45,16 +45,14 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
         }
     }, [pythonOutput])
 
-    function preview(id) {
-        // TODO: Setting the processing message first won't actually work, because these are asynchronous,
-        // so we can't be sure that they will happen in the right order.
-        // // Set processing message
-        // let dabAnalysisImage = dabAnalysisImages[id]
-        // dabAnalysisImage.outputImage = `processing file ${dabAnalysisImages[id].file.name}`
-        // setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
+    async function preview(id) {
+        // Set processing message
+        let dabAnalysisImage = dabAnalysisImages[id]
+        dabAnalysisImage.outputImage = `processing`
+        await setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == id) ? dabAnalysisImage : value}))
         
         // Run python
-        setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '", asyn_params=np.array([' + [parameters.asyn_LMean, parameters.asyn_aMean, parameters.asyn_bMean, parameters.asyn_threshold].toString() + ']))})')
+        await setPythonCode('json.dumps({"id": ' + id + ', "result": analysispreview(' + id + ', "' + dabAnalysisImages[id].file.name + '", asyn_params=np.array([' + [parameters.asyn_LMean, parameters.asyn_aMean, parameters.asyn_bMean, parameters.asyn_threshold].toString() + ']))})')
     }
 
     return (
@@ -162,11 +160,18 @@ function ImageFileViewer({file}) {
 }
 
 function OutputPreviewViewer({dabImage, id, preview}) {
-    if (dabImage && dabImage.outputImage) {
+    if (dabImage && dabImage.outputImage == 'processing') {
+        // this is not a very responsive way of putting up a 'running' message
+        return <p>Running...</p>
+    } else if (dabImage && dabImage.outputImage) {
         return <img src={`data:image/png;base64,${dabImage.outputImage}`}></img>
     } else {
-        return <button onClick={() => {preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
-    }
+        return (
+            <>
+            <button onClick={async () => {await preview(id)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Run Preview Analysis</button>
+            </>
+        )
+        }
 
 }
 
@@ -182,40 +187,57 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
         setDabAnalysisImages(dabAnalysisImages.map((dabAnalysisImage) => { return {...dabAnalysisImage, outputImage: undefined} }))
     }
     return (
-        <div className="grid grid-cols-1">
-            <form id="parameterForm" onChange={setParametersFromForm}>
+        <div className="space-y-12 m-[1rem]">
+            <div className="border-b border-gray-900/10 pb-12">
 
-                <div id="asynParameters" className="grid grid-cols-1">
-                    <label htmlFor="asyn_LMean">asyn_LMean:</label>
-                    <input type="number" id="asyn_LMean" name="asyn_LMean" defaultValue={parameters["asyn_LMean"]} step="0.01" />
-                    
-                    <label htmlFor="asyn_aMean">asyn_aMean:</label>
-                    <input type="number" id="asyn_aMean" name="asyn_aMean" defaultValue={parameters["asyn_aMean"]} step="0.01" />
-                    
-                    <label htmlFor="asyn_bMean">asyn_bMean:</label>
-                    <input type="number" id="asyn_bMean" name="asyn_bMean" defaultValue={parameters["asyn_bMean"]} step="0.01" />
-                    
-                    <label htmlFor="asyn_threshold">asyn_threshold:</label>
-                    <input type="number" id="asyn_threshold" name="asyn_threshold" defaultValue={parameters["asyn_threshold"]} step="0.01" />
-                </div>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">Parameters</h2>
+                <p className="mt-1 text-sm leading-6 text-gray-600">N.B. Changing parameters will clear any preview runs</p>
 
-                <label htmlFor="analyseNuclei">Analyse Nuclei?:</label>
-                <input type="checkbox" id="analyseNuclei"/>
+                <form id="parameterForm" onChange={setParametersFromForm} className="w-full max-w-lg">
 
-                <div id="nucleiParameters" className={`${ parameters['analyseNuclei'] ? '': 'hidden'}`}>
-                    <label htmlFor="nuclei_LMean">nuclei_LMean:</label>
-                    <input type="number" id="nuclei_LMean" name="nuclei_LMean" defaultValue={parameters["nuclei_LMean"]} step="0.01" />
-                    
-                    <label htmlFor="nuclei_aMean">nuclei_aMean:</label>
-                    <input type="number" id="nuclei_aMean" name="nuclei_aMean" defaultValue={parameters["nuclei_aMean"]} step="0.01" />
-                    
-                    <label htmlFor="nuclei_bMean">nuclei_bMean:</label>
-                    <input type="number" id="nuclei_bMean" name="nuclei_bMean" defaultValue={parameters["nuclei_bMean"]} step="0.01" />
-                    
-                    <label htmlFor="nuclei_threshold">nuclei_threshold:</label>
-                    <input type="number" id="nuclei_threshold" name="nuclei_threshold" defaultValue={parameters["nuclei_threshold"]} step="0.01" />
-                </div>
-            </form>
+                    <div id="asynParameters" className="w-full md:w-1/2 px-3">
+                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_LMean">asyn_LMean:</label>
+                            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_LMean" name="asyn_LMean" defaultValue={parameters["asyn_LMean"]} step="0.01" />
+                        </div>
+
+                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_aMean">asyn_aMean:</label>
+                            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_aMean" name="asyn_aMean" defaultValue={parameters["asyn_aMean"]} step="0.01" />
+                        </div>
+
+                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_bMean">asyn_bMean:</label>
+                            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_bMean" name="asyn_bMean" defaultValue={parameters["asyn_bMean"]} step="0.01" />
+                        </div>
+
+                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_threshold">asyn_threshold:</label>
+                            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_threshold" name="asyn_threshold" defaultValue={parameters["asyn_threshold"]} step="0.01" />
+                        </div>
+                    </div>
+
+                    {/* TODO: Remove analyseNuclei button from being hidden when nuclei analysis enabled*/}
+                    <div className="hidden w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <label htmlFor="analyseNuclei" className="w-4 h-4 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" >Analyse Nuclei?:</label>
+                        <input type="checkbox" id="analyseNuclei" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"/>
+                    </div>
+
+                    <div id="nucleiParameters" className={`${ parameters['analyseNuclei'] ? '': 'hidden'}`}>
+                        <label htmlFor="nuclei_LMean">nuclei_LMean:</label>
+                        <input type="number" id="nuclei_LMean" name="nuclei_LMean" defaultValue={parameters["nuclei_LMean"]} step="0.01" />
+                        
+                        <label htmlFor="nuclei_aMean">nuclei_aMean:</label>
+                        <input type="number" id="nuclei_aMean" name="nuclei_aMean" defaultValue={parameters["nuclei_aMean"]} step="0.01" />
+                        
+                        <label htmlFor="nuclei_bMean">nuclei_bMean:</label>
+                        <input type="number" id="nuclei_bMean" name="nuclei_bMean" defaultValue={parameters["nuclei_bMean"]} step="0.01" />
+                        
+                        <label htmlFor="nuclei_threshold">nuclei_threshold:</label>
+                        <input type="number" id="nuclei_threshold" name="nuclei_threshold" defaultValue={parameters["nuclei_threshold"]} step="0.01" />
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }
