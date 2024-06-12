@@ -269,20 +269,18 @@ class DAB:
             axes.imshow(img)
             axes.axis("off")
         else:
-            fig, axes = plt.subplots(1, 2, sharey=True)
-            axes[0].imshow(img)
+            fig, axes = plt.subplots(1, 1, sharey=True)
 
-            axes[1].imshow(img)
+            axes.imshow(img)
             if len(masks.shape) > 2:  # if multiple masks
                 colors = ["darkred", "darkblue"]
                 for i in np.arange(masks.shape[2]):  # plot multiple masks
-                    axes[1].contour(
+                    axes.contour(
                         masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i]
                     )
             else:
-                axes[1].contour(masks, [0.5], linewidths=0.5, colors="darkred")
+                axes.contour(masks, [0.5], linewidths=0.5, colors="darkred")
 
-            for a in axes:
-                a.axis("off")
+            axes.axis("off")
 
         return fig, axes
