@@ -164,8 +164,7 @@ class DAB:
 
         Returns:
             image_mask_asyn (np.2darray): mask of protein
-            table_asyn (pd.DataArray): pandas array of asyn data
-            asyn_params (pd.DataArray): parameters used to gets asyn mask"""
+            table_asyn (pd.DataArray): pandas array of asyn data"""
 
         ihc_hed = rgb2hed(self.im2double(img))
         # Create an RGB image for each of the stains
