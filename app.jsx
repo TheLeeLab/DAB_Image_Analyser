@@ -258,6 +258,9 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
                     </div>
                 </form>
             </div>
+            <div className="flex justify-center">
+                <button onClick={async () => {console.log("This doesn't do anything yet!")}} className="bg-gray-300 hover:bg-gray-30 text-gray-500 font-bold py-2 px-4 rounded"><span className="line-through">Run all and download</span></button>
+            </div>
         </div>
     )
 }
