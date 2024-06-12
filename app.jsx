@@ -215,30 +215,30 @@ function ParameterForm({parameters, setParameters, dabAnalysisImages, setDabAnal
 
                 <form id="parameterForm" onChange={setParametersFromForm} className="w-full max-w-lg">
 
-                    <div id="asynParameters" className="w-full md:w-1/2 px-3">
-                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                    <div id="asynParameters" className="w-full">
+                        <div className="w-full px-3 mb-6">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_LMean">asyn_LMean:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_LMean" name="asyn_LMean" defaultValue={parameters["asyn_LMean"]} step="0.01" />
                         </div>
 
-                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <div className="w-full px-3 mb-6">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_aMean">asyn_aMean:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_aMean" name="asyn_aMean" defaultValue={parameters["asyn_aMean"]} step="0.01" />
                         </div>
 
-                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <div className="w-full px-3 mb-6">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_bMean">asyn_bMean:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_bMean" name="asyn_bMean" defaultValue={parameters["asyn_bMean"]} step="0.01" />
                         </div>
 
-                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <div className="w-full px-3 mb-6">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="asyn_threshold">asyn_threshold:</label>
                             <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" id="asyn_threshold" name="asyn_threshold" defaultValue={parameters["asyn_threshold"]} step="0.01" />
                         </div>
                     </div>
 
                     {/* TODO: Remove analyseNuclei button from being hidden when nuclei analysis enabled*/}
-                    <div className="hidden w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                    <div className="hidden w-full px-3 mb-6">
                         <label htmlFor="analyseNuclei" className="w-4 h-4 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" >Analyse Nuclei?:</label>
                         <input type="checkbox" id="analyseNuclei" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"/>
                     </div>
