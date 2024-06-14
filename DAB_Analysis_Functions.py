@@ -67,27 +67,26 @@ class DAB:
         return p_circ
 
     def clean_nuclear_mask(self, mask):
-        """ clean_nuclear_mask function
+        """clean_nuclear_mask function
         takes mask, and cleans up nuclei
         removes 3*3 (i.e. diffraction limited) objects
         clears border, connects larger aggregates if small "holes" inside, etc
-        ================INPUTS============= 
+        ================INPUTS=============
         mask is logical array of image mask
-        ================OUTPUT============= 
-        cleaned_mask is cleaned up mask """
-        mask_disk = 1*ski.morphology.binary_closing(mask, ski.morphology.disk(1))
+        ================OUTPUT=============
+        cleaned_mask is cleaned up mask"""
+        mask_disk = 1 * ski.morphology.binary_closing(mask, ski.morphology.disk(1))
         seed = np.copy(mask_disk)
         seed[1:-1, 1:-1] = mask_disk.max()
-        
-        mask_filled = ski.morphology.reconstruction(seed, mask_disk, method='erosion')
+
+        mask_filled = ski.morphology.reconstruction(seed, mask_disk, method="erosion")
         cleaned_mask = ski.segmentation.clear_border(mask_filled)
-       
+
         label_img = label(cleaned_mask)
-        props = regionprops_table(label_img, properties=('area',
-                                                         'axis_minor_length'))
-        Area = props['area']
-        indices_toremove = np.unique(np.unique(label_img)[1:]*(Area < 60))[1:]
-        mask=np.isin(label_img,indices_toremove)
+        props = regionprops_table(label_img, properties=("area", "axis_minor_length"))
+        Area = props["area"]
+        indices_toremove = np.unique(np.unique(label_img)[1:] * (Area < 60))[1:]
+        mask = np.isin(label_img, indices_toremove)
         cleaned_mask[mask] = 0
         return cleaned_mask
 
@@ -128,25 +127,26 @@ class DAB:
         return cleaned_mask
 
     def otsu_filtering(self, image):
-        """ otsu threshold a single colour image
-        
+        """otsu threshold a single colour image
+
         Args:
             image (np.2darray): single grayscale image
         Returns:
-            mask (np.2darray): single boolean mask image"""
-            
+            mask (np.2darray): single boolean image
+            thresh (float): single boolean mask image"""
+
         seed = np.copy(image)
         seed[1:-1, 1:-1] = image.max()
         mask = image
-        
-        filled = reconstruction(seed, mask, method='erosion')
-        holes = np.abs(image-filled)
+
+        filled = reconstruction(seed, mask, method="erosion")
+        holes = np.abs(image - filled)
         thresh = threshold_otsu(holes)
         if thresh > 0.025:
             mask = holes > thresh
         else:
             mask = np.full_like(holes, False)
-        return mask
+        return mask, thresh
 
     def analyse_DAB(self, img, filename):
         """analyse_DAB function
@@ -171,7 +171,7 @@ class DAB:
 
         dab_image = rgb2gray(ihc_d)
 
-        image_mask_asyn = self.otsu_filtering(dab_image)
+        image_mask_asyn, thresh = self.otsu_filtering(dab_image)
         image_mask_asyn = self.clean_protein_mask(image_mask_asyn)
 
         label_img_asyn = label(image_mask_asyn)
@@ -188,7 +188,7 @@ class DAB:
             props_asyn["axis_minor_length"], filename, dtype="object"
         )
 
-        return image_mask_asyn, table_asyn
+        return image_mask_asyn, table_asyn, thresh
 
     def analyse_DAB_and_cells(self, img, filename):
         """analyse_DAB function
@@ -214,14 +214,14 @@ class DAB:
 
         dab_image = rgb2gray(ihc_d)
 
-        image_mask_asyn = self.otsu_filtering(dab_image)
+        image_mask_asyn, thresh_asyn = self.otsu_filtering(dab_image)
         image_mask_asyn = self.clean_protein_mask(image_mask_asyn)
 
         test = ihc_h
         test[image_mask_asyn == 1] = np.median(ihc_h[:, :, 0])
         nuclei_image = rgb2gray(test)
 
-        image_mask_nuclei = self.otsu_filtering(nuclei_image)
+        image_mask_nuclei, thresh_nuclei = self.otsu_filtering(nuclei_image)
         image_mask_nuclei = self.clean_nuclear_mask(image_mask_nuclei)
 
         label_img_asyn = label(image_mask_asyn)
@@ -247,7 +247,14 @@ class DAB:
         table_nuclei["pseudo_circularity"] = self.pseudo_circularity(
             props_nuclei["axis_major_length"], props_nuclei["axis_minor_length"]
         )
-        return image_mask_asyn, table_asyn, image_mask_nuclei, table_nuclei
+        return (
+            image_mask_asyn,
+            table_asyn,
+            image_mask_nuclei,
+            table_nuclei,
+            thresh_asyn,
+            thresh_nuclei,
+        )
 
     def plot_masks(self, img, masks=None):
         """plot_masks function
@@ -280,5 +287,5 @@ class DAB:
                 axes.contour(masks, [0.5], linewidths=0.5, colors="darkred")
 
             axes.axis("off")
-        
+
         return fig, axes
