@@ -16,6 +16,7 @@ from skimage.color import rgb2gray, hed2rgb, rgb2hed
 from skimage.morphology import reconstruction
 from skimage.filters import threshold_otsu
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class DAB:
@@ -50,6 +51,26 @@ class DAB:
             img.astype(np.float32) / info.max
         )  # Divide all values by the largest possible value in the datatype
         return imdouble
+    
+    def bincalculator(self, data):
+        """bincalculator function
+        reads in data and generates bins according to Freedman-Diaconis rule
+
+        Args:
+            data (np.1darray): data to calculate bins
+
+        Returns:
+            bins (np.1darray): bins for histogram according to Freedman-Diaconis rule"""
+        N = len(data)
+        sigma = np.std(data)
+
+        binwidth = np.multiply(np.multiply(np.power(N, np.divide(-1, 3)), sigma), 3.5)
+        bins = np.linspace(
+            np.min(data),
+            np.max(data),
+            int((np.max(data) - np.min(data)) / binwidth) + 1,
+        )
+        return bins
 
     def pseudo_circularity(self, MajorAxisLength, MinorAxisLength):
         """pseudo_circularity function
@@ -343,6 +364,47 @@ class DAB:
             thresh_asyn,
             thresh_nuclei,
         )
+    
+    def plot_masks_and_histogram(self, img, masks, table_asyn, histcolor="gray", xaxislabel=r'object area (pixels$^2$)', alpha=1):
+        """plot_masks function
+        takes image, and optional masks, and plots them together
+
+        Args:
+            img (np.ndarray): image data
+            masks (np.ndarry): mask data
+            table_asyn (pd.DataFrame): object data
+        Returns:
+            fig (object): figure object
+            axes (object): axis object"""
+
+        fig, axes = plt.subplots(1, 2)
+
+        axes[0].imshow(img)
+        if len(masks.shape) > 2:  # if multiple masks
+            colors = ["darkred", "darkblue"]
+            for i in np.arange(masks.shape[2]):  # plot multiple masks
+                axes[0].contour(
+                    masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i]
+                )
+        else:
+            axes[0].contour(masks, [0.5], linewidths=0.5, colors="darkred")
+
+        axes[0].axis("off")
+        
+        areas = table_asyn['area'].values
+        bins = self.bincalculator(areas)
+        
+        axes[1].hist(
+            areas,
+            bins=bins,
+            density=False,
+            color=histcolor,
+            alpha=alpha,
+        )
+        axes[1].grid(True, which="both", ls="--", c="gray", lw=0.25, alpha=0.25)
+        axes[1].set_ylabel("frequency", fontsize=8)
+        return fig, axes
+
 
     def plot_masks(self, img, masks=None):
         """plot_masks function
@@ -355,7 +417,6 @@ class DAB:
         Returns:
             fig (object): figure object
             axes (object): axis object"""
-        import matplotlib.pyplot as plt
 
         if isinstance(masks, type(None)):
             fig, axes = plt.subplots(1, 1)
