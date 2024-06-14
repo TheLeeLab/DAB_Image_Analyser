@@ -68,13 +68,15 @@ class DAB:
 
     def clean_nuclear_mask(self, mask):
         """clean_nuclear_mask function
-        takes mask, and cleans up nuclei
-        removes 3*3 (i.e. diffraction limited) objects
+        takes image_mask, and cleans up nuclei
+        removes <60 area (i.e. diffraction limited) objects
         clears border, connects larger aggregates if small "holes" inside, etc
-        ================INPUTS=============
-        mask is logical array of image mask
-        ================OUTPUT=============
-        cleaned_mask is cleaned up mask"""
+
+        Args:
+            image_mask (np.2darray): logical array of image mask
+
+        Returns:
+            cleaned_mask (np.2darray): cleaned up mask"""
         mask_disk = 1 * ski.morphology.binary_closing(mask, ski.morphology.disk(1))
         seed = np.copy(mask_disk)
         seed[1:-1, 1:-1] = mask_disk.max()
@@ -147,6 +149,92 @@ class DAB:
         else:
             mask = np.full_like(holes, False)
         return mask, thresh
+
+    def otsu_filtering_multiimage(self, image_dict):
+        """otsu threshold a single colour image
+
+        Args:
+            image_dict (dict): dict of images
+        Returns:
+            mask_dict (dict): dict of masks
+            thresh (float): threshold value"""
+
+        holes_dict = {}
+        mask_dict = {}
+        for i, key in enumerate(image_dict.keys()):
+            image = image_dict[key]
+            seed = np.copy(image)
+            seed[1:-1, 1:-1] = image.max()
+            mask = image
+
+            filled = reconstruction(seed, mask, method="erosion")
+            holes_dict[key] = np.abs(image - filled)
+            if i == 0:
+                holearray = holes_dict[key].ravel()
+            else:
+                holearray = np.hstack([holearray, holes_dict[key].ravel()])
+
+        thresh = threshold_otsu(holearray)
+        for i, key in enumerate(image_dict.keys()):
+            mask_dict[key] = holes_dict[key] > thresh
+        return mask_dict, thresh
+
+    def analyse_DAB_multiimage(self, img_dict):
+        """analyse_DAB function
+        takes dictionary of images, and uses otsu's method to separate out
+        coloured objects
+        then returns table with object information
+
+        Args:
+            img (dict): dict of images image data; keys are filenames
+
+        Returns:
+            image_mask_asyn (dict): dict of masks
+            table_asyn (pd.DataArray): pandas array of asyn data"""
+
+        dab_image_dict = {}
+        for key in img_dict.keys():
+            ihc_hed = rgb2hed(self.im2double(img_dict[key]))
+            # Create an RGB image for each of the stains
+            null = np.zeros_like(ihc_hed[:, :, 0])
+            ihc_d = hed2rgb(np.stack((null, null, ihc_hed[:, :, 2]), axis=-1))
+
+            dab_image_dict[key] = rgb2gray(ihc_d)
+
+        image_mask_asyn, thresh = self.otsu_filtering_multiimage(dab_image_dict)
+        for i, key in enumerate(image_mask_asyn.keys()):
+            image_mask_asyn[key] = self.clean_protein_mask(image_mask_asyn[key])
+
+            label_img_asyn = label(image_mask_asyn[key])
+            props_asyn = regionprops_table(
+                label_img_asyn,
+                properties=(
+                    "area",
+                    "centroid",
+                    "axis_major_length",
+                    "axis_minor_length",
+                ),
+            )
+
+            if i == 0:
+                table_asyn = pd.DataFrame(props_asyn)
+                table_asyn["pseudo_circularity"] = self.pseudo_circularity(
+                    props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
+                )
+                table_asyn["filename"] = np.full_like(
+                    props_asyn["axis_minor_length"], str(key), dtype="object"
+                )
+            else:
+                table_asyn_temp = pd.DataFrame(props_asyn)
+                table_asyn_temp["pseudo_circularity"] = self.pseudo_circularity(
+                    props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
+                )
+                table_asyn_temp["filename"] = np.full_like(
+                    props_asyn["axis_minor_length"], str(key), dtype="object"
+                )
+                table_asyn = pd.concat([table_asyn, table_asyn_temp])
+        table_asyn = table_asyn.reset_index()
+        return image_mask_asyn, table_asyn
 
     def analyse_DAB(self, img, filename):
         """analyse_DAB function
