@@ -51,7 +51,7 @@ class DAB:
             img.astype(np.float32) / info.max
         )  # Divide all values by the largest possible value in the datatype
         return imdouble
-    
+
     def bincalculator(self, data):
         """bincalculator function
         reads in data and generates bins according to Freedman-Diaconis rule
@@ -364,8 +364,16 @@ class DAB:
             thresh_asyn,
             thresh_nuclei,
         )
-    
-    def plot_masks_and_histogram(self, img, masks, table_asyn, histcolor="gray", xaxislabel=r'object area (pixels$^2$)', alpha=1):
+
+    def plot_masks_and_histogram(
+        self,
+        img,
+        masks,
+        table_asyn,
+        histcolor="gray",
+        xaxislabel=r"object area (pixels$^2$)",
+        alpha=1,
+    ):
         """plot_masks function
         takes image, and optional masks, and plots them together
 
@@ -383,17 +391,15 @@ class DAB:
         if len(masks.shape) > 2:  # if multiple masks
             colors = ["darkred", "darkblue"]
             for i in np.arange(masks.shape[2]):  # plot multiple masks
-                axes[0].contour(
-                    masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i]
-                )
+                axes[0].contour(masks[:, :, i], [0.5], linewidths=0.5, colors=colors[i])
         else:
             axes[0].contour(masks, [0.5], linewidths=0.5, colors="darkred")
 
         axes[0].axis("off")
-        
-        areas = table_asyn['area'].values
+
+        areas = table_asyn["area"].values
         bins = self.bincalculator(areas)
-        
+
         axes[1].hist(
             areas,
             bins=bins,
@@ -404,7 +410,6 @@ class DAB:
         axes[1].grid(True, which="both", ls="--", c="gray", lw=0.25, alpha=0.25)
         axes[1].set_ylabel("frequency", fontsize=8)
         return fig, axes
-
 
     def plot_masks(self, img, masks=None):
         """plot_masks function
