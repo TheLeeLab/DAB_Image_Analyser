@@ -74,6 +74,27 @@ function Pyodide({
 
                 else:
                     return f"No file exists at {input_filepath}"
+            
+            def data_mask_to_b64(data, mask):
+                fig, axes = D.plot_masks(data, mask)
+                plt.tight_layout()
+                img_out = io.BytesIO()
+                fig.savefig(img_out, format="png")
+                img_out.seek(0)
+                imgdata = img_out.read()
+
+                b64string = b64encode(imgdata).decode('UTF-8')
+                return b64string
+
+            
+            def batch_analyse():
+                input_dir = 'input'
+                output_dir = 'output-batch'
+                file_list = [os.path.join(input_dir, filename) for filename in os.listdir(input_dir)]
+                im_dict = D.imdict_read(file_list)
+                image_mask_asyn, table_asyn = D.analyse_DAB_multiimage(im_dict)
+                image_mask_asyn_serialized = {key: data_mask_to_b64(D.imread(key), value) for key, value in image_mask_asyn.items()}
+                return image_mask_asyn_serialized
         `)
 
       setIsPyodideLoading(false)

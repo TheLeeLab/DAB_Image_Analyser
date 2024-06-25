@@ -11,7 +11,7 @@ function HomePage() {
         <>
             <div className="grid grid-cols-2">
                 <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
-                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
+                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} setPythonCode={setPythonCode} />
             </div>
             <Pyodide pythonCode={pythonCode} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
             </>
@@ -22,9 +22,13 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
     useEffect(() => {
         if (dabAnalysisImages.length > 0 && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
-            let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
-            dabAnalysisImage.outputImage = pythonOutputObject.result
-            setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
+            if (pythonOutputObject['id'] == 'batch') {
+                console.log(pythonOutputObject);
+            } else {
+                let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
+                dabAnalysisImage.outputImage = pythonOutputObject.result
+                setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
+            }
             // Reset pythonOutput to empty string after using it
             // TODO: Avoid this pattern
             setPythonOutput('')
@@ -204,12 +208,19 @@ function OutputPreviewViewer({dabImage, id, preview}) {
 
 }
 
-function ParameterForm() {
+function ParameterForm({setPythonCode, dabAnalysisImages, setDabAnalysisImages}) {
+
+    function RunBatchAnalysis() {
+        setPythonCode(`json.dumps({
+                "id": "batch",
+                "result": batch_analyse()
+            })`)
+    }
 
     return (
         <div className="space-y-12 m-[1rem]">
             <div className="flex justify-center">
-                <button onClick={async () => {console.log("This doesn't do anything yet!")}} className="bg-gray-300 hover:bg-gray-30 text-gray-500 font-bold py-2 px-4 rounded"><span className="line-through">Run all and download</span></button>
+                <button onClick={async () => {RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all and download</span></button>
             </div>
         </div>
     )
