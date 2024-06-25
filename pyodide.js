@@ -52,10 +52,10 @@ function Pyodide({
                     # TODO: error handling if imread fails
                     data = D.imread(input_filepath)
                     if analyse_nuclei:
-                        image_mask_asyn, table_asyn, image_mask_nuclei, table_nuclei = D.analyse_DAB_and_cells(data, filename)
+                        image_mask_asyn, table_asyn, image_mask_nuclei, table_nuclei, thresh_asyn, thresh_nuclei = D.analyse_DAB_and_cells(data, filename)
                         masks = np.dstack([image_mask_asyn, image_mask_nuclei])
                     else:
-                        image_mask_asyn, table_asyn = D.analyse_DAB(data, filename)
+                        image_mask_asyn, table_asyn, thresh = D.analyse_DAB(data, filename)
                         masks = image_mask_asyn
                     fig, axes = D.plot_masks(data, masks)
                     if os.path.exists(output_filepath):
