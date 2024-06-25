@@ -36,6 +36,23 @@ class DAB:
         img = cv2.imread(file)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return img
+    
+    def imdict_read(self, files):
+        """imdict_read function
+        takes list of files and makes image dict
+
+        Args:
+            files (array): array of file path
+
+        Returns:
+            img_dict (dict): dict of images"""
+
+        img_dict = {}
+        for file in files:
+            img = cv2.imread(file)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img_dict[file] = img
+        return img_dict
 
     def im2double(self, img):
         """im2double function
