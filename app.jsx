@@ -11,7 +11,7 @@ function HomePage() {
         <>
             <div className="grid grid-cols-2">
                 <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
-                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} setPythonCode={setPythonCode} />
+                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} setPythonCode={setPythonCode} pythonOutput={pythonOutput} />
             </div>
             <Pyodide pythonCode={pythonCode} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
             </>
@@ -22,9 +22,9 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
     useEffect(() => {
         if (dabAnalysisImages.length > 0 && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
-            if (pythonOutputObject['id'] == 'batch') {
+            if (pythonOutputObject['status'] == 'generator created' || pythonOutputObject['status'] == 'generator in progress' || pythonOutputObject['status'] == 'generator completed') {
                 console.log(pythonOutputObject);
-            } else {
+            } else if (pythonOutputObject['status'] == 'preview') {
                 let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
                 dabAnalysisImage.outputImage = pythonOutputObject.result
                 setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
@@ -44,6 +44,7 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
         // Run python
         await setPythonCode(
             `json.dumps({
+                "status": "preview",
                 "id": ${id},
                 "result": analysispreview(
                     ${id},
@@ -208,19 +209,26 @@ function OutputPreviewViewer({dabImage, id, preview}) {
 
 }
 
-function ParameterForm({setPythonCode, dabAnalysisImages, setDabAnalysisImages}) {
+function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages}) {
 
-    function RunBatchAnalysis() {
-        setPythonCode(`json.dumps({
-                "id": "batch",
-                "result": batch_analyse()
-            })`)
+    async function RunBatchAnalysis() {
+        setPythonCode("batch_analysis_generator = batch_analyse(); json.dumps({'status': 'generator created'})")
     }
+
+    useEffect(() => {
+        if (pythonOutput && pythonOutput.length > 0) {
+            let pythonOutputObject = JSON.parse(pythonOutput.toString());
+            if (pythonOutputObject["status"] == 'generator created' || pythonOutputObject["status"] == 'generator in progress') {
+                setPythonCode("status, filename, output = next(batch_analysis_generator); json.dumps({'status': status, 'filename': filename, 'output': output})")
+            }
+        }
+
+    }, [pythonOutput])
 
     return (
         <div className="space-y-12 m-[1rem]">
             <div className="flex justify-center">
-                <button onClick={async () => {RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all and download</span></button>
+                <button onClick={async () => {await RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all and download</span></button>
             </div>
         </div>
     )

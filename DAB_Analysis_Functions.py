@@ -261,7 +261,7 @@ class DAB:
             table_asyn["filename"] = np.full_like(
                 props_asyn["axis_minor_length"], str(key), dtype="object"
             )
-            yield image_mask_asyn[key], table_asyn
+            yield key, image_mask_asyn[key], table_asyn
                 
     def analyse_DAB(self, img, filename):
         """analyse_DAB function
