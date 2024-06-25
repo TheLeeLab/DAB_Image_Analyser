@@ -22,8 +22,14 @@ function FileZone({setPythonCode, pythonOutput, setPythonOutput, dabAnalysisImag
     useEffect(() => {
         if (dabAnalysisImages.length > 0 && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
-            if (pythonOutputObject['status'] == 'generator created' || pythonOutputObject['status'] == 'generator in progress' || pythonOutputObject['status'] == 'generator completed') {
+            if (pythonOutputObject['status'] == 'generator created') {
                 console.log(pythonOutputObject);
+            }
+            else if (pythonOutputObject['status'] == 'generator in progress' || pythonOutputObject['status'] == 'generator completed') {
+                console.log(pythonOutputObject);
+                let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
+                dabAnalysisImage.outputImage = pythonOutputObject.result
+                setDabAnalysisImages(dabAnalysisImages.map((value, index) => {return (index == pythonOutputObject.id) ? dabAnalysisImage : value}));
             } else if (pythonOutputObject['status'] == 'preview') {
                 let dabAnalysisImage = dabAnalysisImages[pythonOutputObject.id]
                 dabAnalysisImage.outputImage = pythonOutputObject.result
@@ -219,7 +225,7 @@ function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAn
         if (pythonOutput && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
             if (pythonOutputObject["status"] == 'generator created' || pythonOutputObject["status"] == 'generator in progress') {
-                setPythonCode("status, filename, output = next(batch_analysis_generator); json.dumps({'status': status, 'filename': filename, 'output': output})")
+                setPythonCode("status, id, filename, result = next(batch_analysis_generator); json.dumps({'status': status, 'filename': filename, 'id': id, 'result': result})")
             }
         }
 

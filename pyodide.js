@@ -97,7 +97,10 @@ function Pyodide({
                       status = 'generator in progress'
                     else:
                       status = 'generator completed'
-                    yield status, filename, image_mask_asyn_serialized
+                    # Get just the id part of the filename
+                    # e.g. input/41-foobar.png -> 41
+                    id = filename.split('/')[1].split('-')[0]
+                    yield status, id, filename, image_mask_asyn_serialized
         `)
 
       setIsPyodideLoading(false)
