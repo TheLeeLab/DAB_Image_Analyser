@@ -49,35 +49,19 @@ function Pyodide({
                 input_filepath = os.path.join(input_dir, filename)
                 output_filepath = os.path.join(output_dir, filename)
                 if os.path.exists(input_filepath):
-                    # TODO: error handling if imread fails
                     data = D.imread(input_filepath)
-                    if analyse_nuclei:
-                        image_mask_asyn, table_asyn, image_mask_nuclei, table_nuclei, thresh_asyn, thresh_nuclei = D.analyse_DAB_and_cells(data, filename)
-                        masks = np.dstack([image_mask_asyn, image_mask_nuclei])
-                    else:
-                        image_mask_asyn, table_asyn, thresh = D.analyse_DAB(data, filename)
-                        masks = image_mask_asyn
-                    fig, axes = D.plot_masks(data, masks)
-                    if os.path.exists(output_filepath):
-                        os.remove(output_filepath)
-                    fig.savefig(output_filepath)
-
-                    # Output as b64 string to send to JS
-                    plt.tight_layout()
-                    img_out = io.BytesIO()
-                    fig.savefig(img_out, format="png")
-                    img_out.seek(0)
-                    imgdata = img_out.read()
-
-                    b64string = b64encode(imgdata).decode('UTF-8')
-                    return b64string
-
+                    image_mask_asyn, table_asyn, thresh = D.analyse_DAB(data, input_filepath)
+                    return plot_and_save_masks(data, image_mask_asyn, output_filepath=output_filepath)
                 else:
                     return f"No file exists at {input_filepath}"
             
-            def data_mask_to_b64(data, mask):
+            def plot_and_save_masks(data, mask, output_filepath=None):
                 fig, axes = D.plot_masks(data, mask)
                 plt.tight_layout()
+                if output_filepath:
+                    if os.path.exists(output_filepath):
+                        os.remove(output_filepath)
+                    fig.savefig(output_filepath)
                 img_out = io.BytesIO()
                 fig.savefig(img_out, format="png")
                 img_out.seek(0)
@@ -89,14 +73,17 @@ function Pyodide({
             def batch_analyse():
                 input_dir = 'input'
                 output_dir = 'output-batch'
+                if not os.path.exists(output_dir):
+                    os.mkdir(output_dir)
                 file_list = [os.path.join(input_dir, filename) for filename in os.listdir(input_dir)]
                 im_dict = D.imdict_read(file_list)
                 for i, (filename, image_mask_asyn, table_asyn) in enumerate(D.analyse_DAB_multiimage(im_dict)):
-                    image_mask_asyn_serialized = data_mask_to_b64(D.imread(filename), image_mask_asyn)
+                    output_filepath = os.path.join(output_dir, os.path.basename(filename))
+                    image_mask_asyn_serialized = plot_and_save_masks(D.imread(filename), image_mask_asyn, output_filepath=output_filepath)
                     if i < len(im_dict) - 1:
-                      status = 'generator in progress'
+                        status = 'generator in progress'
                     else:
-                      status = 'generator completed'
+                        status = 'generator completed'
                     # Get just the id part of the filename
                     # e.g. input/41-foobar.png -> 41
                     id = filename.split('/')[1].split('-')[0]
