@@ -240,7 +240,6 @@ class DAB:
             dab_image_dict[key] = rgb2gray(ihc_d)
 
         image_mask_asyn, thresh = self.otsu_filtering_multiimage(dab_image_dict)
-        n_images = len(image_mask_asyn.keys())
         for i, key in enumerate(image_mask_asyn.keys()):
             image_mask_asyn[key] = self.clean_protein_mask(image_mask_asyn[key])
 
@@ -255,29 +254,14 @@ class DAB:
                 ),
             )
 
-            if i == 0:
-                table_asyn = pd.DataFrame(props_asyn)
-                table_asyn["pseudo_circularity"] = self.pseudo_circularity(
-                    props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
-                )
-                table_asyn["filename"] = np.full_like(
-                    props_asyn["axis_minor_length"], str(key), dtype="object"
-                )
-                yield image_mask_asyn[key], table_asyn
-            else:
-                table_asyn_temp = pd.DataFrame(props_asyn)
-                table_asyn_temp["pseudo_circularity"] = self.pseudo_circularity(
-                    props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
-                )
-                table_asyn_temp["filename"] = np.full_like(
-                    props_asyn["axis_minor_length"], str(key), dtype="object"
-                )
-                table_asyn = pd.concat([table_asyn, table_asyn_temp])
-                table_asyn = table_asyn.reset_index()
-                if i != n_images:
-                    yield image_mask_asyn[key], table_asyn_temp
-                else:
-                    yield image_mask_asyn, table_asyn
+            table_asyn = pd.DataFrame(props_asyn)
+            table_asyn["pseudo_circularity"] = self.pseudo_circularity(
+                props_asyn["axis_major_length"], props_asyn["axis_minor_length"]
+            )
+            table_asyn["filename"] = np.full_like(
+                props_asyn["axis_minor_length"], str(key), dtype="object"
+            )
+            yield image_mask_asyn[key], table_asyn
                 
     def analyse_DAB(self, img, filename):
         """analyse_DAB function
