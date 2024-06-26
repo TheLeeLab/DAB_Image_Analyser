@@ -72,9 +72,7 @@ function Pyodide({
 
             def batch_analyse():
                 input_dir = 'input'
-                output_dir = 'output-batch'
-                if not os.path.exists(output_dir):
-                    os.mkdir(output_dir)
+                output_dir = 'output-final'
                 file_list = [os.path.join(input_dir, filename) for filename in os.listdir(input_dir)]
                 im_dict = D.imdict_read(file_list)
                 for i, (filename, image_mask_asyn, table_asyn) in enumerate(D.analyse_DAB_multiimage(im_dict)):
