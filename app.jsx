@@ -217,6 +217,24 @@ function OutputPreviewViewer({dabImage, id, preview}) {
 
 function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages}) {
 
+    const [progress, setProgress] = useState({'status': 'idle', 'imagesCompleted': 0, 'total': 0})
+
+    function ProgressBar({progress}) {
+        return (
+            <div className="flex items-center justify-between w-full">
+                <div className="w-full">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-base font-medium text-gray-700 dark:text-white">Analysis in progress...</span>
+                        <span class="text-sm font-medium text-gray-700 dark:text-white">{progress['imagesCompleted']} / {progress['total']}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div className="bg-blue-600 h-2.5 rounded-full" style={{width: progress.imagesCompleted/progress.total*100 + '%'}}></div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     async function RunBatchAnalysis() {
         setPythonCode("batch_analysis_generator = batch_analyse(); json.dumps({'status': 'generator created'})")
     }
@@ -225,7 +243,13 @@ function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAn
         if (pythonOutput && pythonOutput.length > 0) {
             let pythonOutputObject = JSON.parse(pythonOutput.toString());
             if (pythonOutputObject["status"] == 'generator created' || pythonOutputObject["status"] == 'generator in progress') {
-                setPythonCode("status, id, filename, result = next(batch_analysis_generator); json.dumps({'status': status, 'filename': filename, 'id': id, 'result': result})")
+                setPythonCode("status, id, filename, result = next(batch_analysis_generator); json.dumps({'status': status, 'filename': filename, 'id': id, 'result': result})");
+            }
+            if (pythonOutputObject["status"] == 'generator in progress') {
+                setProgress({...progress, imagesCompleted: progress.imagesCompleted + 1});
+            }
+            if (pythonOutputObject["status"] == 'generator completed') {
+                setProgress({...progress, status: 'completed'});
             }
         }
 
@@ -234,7 +258,9 @@ function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAn
     return (
         <div className="space-y-12 m-[1rem]">
             <div className="flex justify-center">
-                <button onClick={async () => {await RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all and download</span></button>
+                {progress.status == 'idle' ? <button onClick={async () => {setProgress({...progress, status: 'running', total: dabAnalysisImages.length}); await RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all</span></button> : null}
+                {progress.status == 'running' ? <ProgressBar progress={progress}/> : null}
+                {progress.status == 'completed' ? <button onClick={async () => {window.alert("Downloading not implemented yet")}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Download results</span></button> : null}
             </div>
         </div>
     )
