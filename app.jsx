@@ -7,13 +7,15 @@ function HomePage() {
     const [pythonOutput, setPythonOutput] = useState('');
     const [pythonCode, setPythonCode] = useState('');
     const [dabAnalysisImages, setDabAnalysisImages] = useState([]);
+    const [downloadZip, setDownloadZip] = useState(false);
+
     return (
         <>
             <div className="grid grid-cols-2">
                 <FileZone setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} />
-                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} setPythonCode={setPythonCode} pythonOutput={pythonOutput} />
+                <ParameterForm dabAnalysisImages={dabAnalysisImages} setDabAnalysisImages={setDabAnalysisImages} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setDownloadZip={setDownloadZip}/>
             </div>
-            <Pyodide pythonCode={pythonCode} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} />
+            <Pyodide pythonCode={pythonCode} setPythonCode={setPythonCode} pythonOutput={pythonOutput} setPythonOutput={setPythonOutput} dabAnalysisImages={dabAnalysisImages} setDownloadZip={setDownloadZip} downloadZip={downloadZip}/>
             </>
     );
 }
@@ -215,7 +217,7 @@ function OutputPreviewViewer({dabImage, id, preview}) {
 
 }
 
-function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages}) {
+function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAnalysisImages, setDownloadZip}) {
 
     const [progress, setProgress] = useState({'status': 'idle', 'imagesCompleted': 0, 'total': 0})
 
@@ -260,7 +262,7 @@ function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAn
             <div className="flex justify-center">
                 {progress.status == 'idle' ? <button onClick={async () => {setProgress({...progress, status: 'running', total: dabAnalysisImages.length}); await RunBatchAnalysis()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Run all</span></button> : null}
                 {progress.status == 'running' ? <ProgressBar progress={progress}/> : null}
-                {progress.status == 'completed' ? <button onClick={async () => {window.alert("Downloading not implemented yet")}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Download results</span></button> : null}
+                {progress.status == 'completed' ? <button onClick={async () => {setDownloadZip(true)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><span>Download results</span></button> : null}
             </div>
         </div>
     )
