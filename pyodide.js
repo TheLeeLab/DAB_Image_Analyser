@@ -38,6 +38,7 @@ function Pyodide({
             import shutil
             import json
             import io
+            import pandas as pd
             from base64 import b64encode
             
             from DAB_Analysis_Functions import DAB
@@ -77,15 +78,16 @@ function Pyodide({
                 output_dir = 'output-final'
                 file_list = [os.path.join(input_dir, filename) for filename in os.listdir(input_dir)]
                 im_dict = D.imdict_read(file_list)
+                tables = []
                 for i, (filename, image_mask_asyn, table_asyn) in enumerate(D.analyse_DAB_multiimage(im_dict)):
                     output_filepath = os.path.join(output_dir, os.path.basename(filename))
-                    csv_filepath = os.path.splitext(output_filepath)[0] + '.csv'
                     image_mask_asyn_serialized = plot_and_save_masks(D.imread(filename), image_mask_asyn, output_filepath=output_filepath)
-                    table_asyn.to_csv(csv_filepath)
+                    tables.append(table_asyn)
                     if i < len(im_dict) - 1:
                         status = 'generator in progress'
                     else:
                         status = 'generator completed'
+                        pd.concat(tables).reset_index(drop=True).to_csv(os.path.join(output_dir, 'table_asyn.csv'))
                         shutil.make_archive('output-final', format="zip", root_dir="output-final")
 
                     # Get just the id part of the filename
