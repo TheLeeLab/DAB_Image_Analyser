@@ -225,9 +225,9 @@ function ParameterForm({setPythonCode, pythonOutput, dabAnalysisImages, setDabAn
         return (
             <div className="flex items-center justify-between w-full">
                 <div className="w-full">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-base font-medium text-gray-700 dark:text-white">Analysis in progress...</span>
-                        <span class="text-sm font-medium text-gray-700 dark:text-white">{progress['imagesCompleted']} / {progress['total']}</span>
+                    <div className="flex justify-between mb-1">
+                        <span className="text-base font-medium text-gray-700 dark:text-white">Analysis in progress...</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-white">{progress['imagesCompleted']} / {progress['total']}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                         <div className="bg-blue-600 h-2.5 rounded-full" style={{width: progress.imagesCompleted/progress.total*100 + '%'}}></div>
